@@ -19,7 +19,7 @@ jobs:
 
     - name: Installing MPI
       shell: bash
-      run: ./linux_install.sh
+      run: sudo ./linux_install.sh
       # Installing the MPI libraries
 
     - name: Create Build Environment
