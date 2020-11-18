@@ -3,11 +3,7 @@ project(algorep)
 
 set(CMAKE_CXX_STANDARD 17)
 
-# Automatic Compiler if not defined
-if (NOT CMAKE_CXX_COMPILER)
-    message(STATUS "No compiler selected, default to mpic++")
-    set(CMAKE_CXX_COMPILER mpic++)
-endif()
+set(CMAKE_CXX_COMPILER mpic++)
 
 # Automatic Compilation Flag to Release
 if (NOT CMAKE_BUILD_TYPE)
