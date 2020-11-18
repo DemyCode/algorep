@@ -1,9 +1,43 @@
 cmake_minimum_required(VERSION 3.16)
 project(algorep)
 
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_COMPILER mpic++)
 
-find_package(MPI REQUIRED)
-include_directories(src)
+# Automatic Compilation Flag to Release
+if (NOT CMAKE_BUILD_TYPE)
+    message(STATUS "No build type selected, default to Release")
+    set(CMAKE_BUILD_TYPE "Release")
+endif()
 
-add_executable(raft src/main.cc src/controller.cc src/client.cc src/node.cc)
+############### COMPILATION FLAGS ###############
+# General compilation flags
+set(CMAKE_CXX_FLAGS "-pedantic -Werror -Wall -Wextra -std=c++17")
+
+# Debug compilation flags
+set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0")
+
+# Release compilation flags
+set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -DRELEASE -DNDEBUG -march=native")
+##################################################
+
+set(MAIN_TARGET raft)
+
+############### EXTERNAL LIBRARIES ##############
+find_package(MPI REQUIRED)
+#################################################
+
+################## DIRECTORIES ##################
+include_directories(src)
+#################################################
+
+#################### SOURCES ####################
+# MAIN SOURCES
+# Exec
+set(EXEC_SOURCES
+        src/main.cc)
+#################################################
+
+# Main Executable
+add_executable(${MAIN_TARGET}
+        ${EXEC_SOURCES})
