@@ -58,6 +58,9 @@ add_custom_target(unit
         COMMAND ./${UNIT_TESTS_TARGET}
         DEPENDS ${UNIT_TESTS_TARGET})
 
+enable_testing()
+add_test(${UNIT_TESTS_TARGET} ${UNIT_TESTS_TARGET})
+
 ###############################################################################
 #                                 GOOGLE TEST                                 #
 ###############################################################################
