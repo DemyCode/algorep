@@ -17,10 +17,17 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Installing MPI
+    - name: Updating Repos
       shell: bash
-      run: sudo apt-get update && sudo apt-get install build-essential cmake libmpich-dev googletest googletest-tools libgtest-dev -y && sudo apt-get upgrade
-      # Installing the MPI libraries
+      run: sudo apt update -y
+
+    - name: Installing Repos
+      shell: bash
+      run: sudo apt install build-essential cmake libmpich-dev googletest googletest-tools libgtest-dev -y
+
+    - name: Upgrading Repos
+      shell: bash
+      run: sudo apt upgrade -y
 
     - name: Create Build Environment
       # Some projects don't allow in-source building, so create a separate build directory
