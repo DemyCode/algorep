@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
         node.run();
     }
 
-    // std::cout << "Hello, World, I am " << rank << " of " << size << "\n";
+    std::cout << "Hello, World, I am " << rank << " of " << size << "\n";
     MPI_Finalize();
     return 0;
 }

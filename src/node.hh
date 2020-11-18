@@ -5,6 +5,9 @@
 #ifndef ALGOREP_NODE_HH
 #define ALGOREP_NODE_HH
 
+#include <mpi.h>
+#include <vector>
+
 enum state {
     FOLLOWER, CANDIDATE, LEADER, STOPPED
 };
@@ -15,7 +18,7 @@ public:
     void run();
     void candidate();
 private:
-    state state;
+    state state_;
     int rank;
     int n_node;
     int offset;

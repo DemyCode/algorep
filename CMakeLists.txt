@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.16)
 project(algorep)
 
-set(CMAKE_CXX_STANDARD 17)
+############### EXTERNAL LIBRARIES ##############
+find_package(MPI REQUIRED)
+#################################################
+
 set(CMAKE_CXX_COMPILER mpic++)
 
 # Automatic Compilation Flag to Release
@@ -23,10 +26,6 @@ set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -DRELEASE -DNDEBUG -march=native")
 
 set(MAIN_TARGET raft)
 
-############### EXTERNAL LIBRARIES ##############
-find_package(MPI REQUIRED)
-#################################################
-
 ################## DIRECTORIES ##################
 include_directories(src)
 #################################################
@@ -35,7 +34,10 @@ include_directories(src)
 # MAIN SOURCES
 # Exec
 set(EXEC_SOURCES
-        src/main.cc)
+        src/main.cc
+        src/client.cc
+        src/controller.cc
+        src/node.cc)
 #################################################
 
 # Main Executable
