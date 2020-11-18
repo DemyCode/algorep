@@ -19,7 +19,7 @@ jobs:
 
     - name: Installing MPI
       shell: bash
-      run: sudo ./linux_install.sh
+      run: sudo apt install build-essential cmake libmpich-dev libgtest-dev -y
       # Installing the MPI libraries
 
     - name: Create Build Environment
