@@ -5,6 +5,10 @@
 #ifndef ALGOREP_APPENDENTRIESRESPONSE_HH
 #define ALGOREP_APPENDENTRIESRESPONSE_HH
 
+#include <string>
+#include <json.hpp>
+
+using json = nlohmann::json;
 
 class AppendEntriesResponse {
     AppendEntriesResponse(int term, bool success);
@@ -12,7 +16,7 @@ class AppendEntriesResponse {
     std::string serialized();
 
     int term;
-    bool voteGranted;
+    bool success;
 };
 
 

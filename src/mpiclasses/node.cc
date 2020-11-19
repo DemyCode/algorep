@@ -60,6 +60,6 @@ void Node::candidate_run()
 {
     for (int i = 0; offset_ < n_node_; i++)
     {
-        MPI_Isend(nullptr, 10, )
+        // MPI_Isend(nullptr, 10, )
     }
 }
