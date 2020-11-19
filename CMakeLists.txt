@@ -35,9 +35,10 @@ include_directories(src)
 # Exec
 set(EXEC_SOURCES
         src/main.cc
-        src/client.cc
-        src/controller.cc
-        src/node.cc)
+        src/mpiclasses/client.cc
+        src/mpiclasses/controller.cc
+        src/mpiclasses/node.cc
+        src/message/message.cc)
 #################################################
 
 # Main Executable

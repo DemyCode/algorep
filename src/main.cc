@@ -1,8 +1,8 @@
 #include <iostream>
 #include <mpi.h>
-#include <node.hh>
-#include <controller.hh>
-#include <client.hh>
+#include <mpiclasses/node.hh>
+#include <mpiclasses/controller.hh>
+#include <mpiclasses/client.hh>
 
 int main(int argc, char* argv[])
 {
