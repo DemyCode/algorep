@@ -18,8 +18,9 @@ Node::Node(int rank, int n_node, int offset, int size)
 
 void Node::run()
 {
+    bool running = true;
     std::cout << "Node " << this->rank_ << " running." << std::endl;
-    while (true)
+    while (running)
     {
         if (this->state_ == state::FOLLOWER)
             follower_run();
@@ -27,8 +28,8 @@ void Node::run()
             leader_run();
         if (this->state_ == state::CANDIDATE)
             candidate_run();
-        return;
     }
+    return;
 }
 
 void Node::follower_run()
@@ -58,8 +59,11 @@ void Node::leader_run()
 
 void Node::candidate_run()
 {
+    this->currentTerm += 1;
     for (int i = 0; offset_ < n_node_; i++)
     {
-        // MPI_Isend(nullptr, 10, )
+        RequestVote requestVote(1, 1, 1, 1);
+        std::string reqser = requestVote.serialize();
+        MPI_Isend(&reqser, 1, MPI_CHAR, i, 0, MPI_COMM_WORLD, MPI_REQUEST_NULL);
     }
 }

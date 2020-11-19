@@ -11,6 +11,7 @@
 #include <string>
 #include <optional>
 #include <iostream>
+#include <rpc/requestvote.hh>
 
 enum state {
     FOLLOWER, CANDIDATE, LEADER, STOPPED
