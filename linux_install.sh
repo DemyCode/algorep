@@ -1,1 +1,0 @@
-sudo apt install build-essential cmake libmpich-dev libgtest-dev -y
