@@ -1,9 +1,10 @@
 #pragma once
 
-#include <json.hpp>
-#include <rpc/entry.hh>
 #include <string>
 #include <vector>
+
+#include "json/json.hpp"
+#include "rpc/entry.hh"
 
 class AppendEntries
 {
@@ -14,7 +15,7 @@ public:
                   int leader_id,
                   int prev_log_index,
                   int prev_log_term,
-                  std::vector<Entry>  entries,
+                  std::vector<Entry> entries,
                   int leader_commit);
     AppendEntries(const json& serialized_json);
     AppendEntries(const std::string& serialized);

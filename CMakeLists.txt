@@ -66,7 +66,8 @@ set(MAIN_EXEC_SOURCES
 
 # Main Executable
 add_executable(${MAIN_TARGET}
-        ${MAIN_EXEC_SOURCES})
+        ${MAIN_EXEC_SOURCES}
+        ${LIB_SOURCES})
 
 add_executable(test
                 test/test.cc)

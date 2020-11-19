@@ -4,9 +4,10 @@
 #include <iostream>
 #include <mpi.h>
 #include <optional>
-#include <rpc/request-vote.hh>
 #include <string>
 #include <vector>
+
+#include "rpc/request-vote.hh"
 
 class Node
 {

@@ -1,7 +1,8 @@
 #pragma once
 
-#include <json.hpp>
 #include <string>
+
+#include "json/json.hpp"
 
 class RequestVote
 {

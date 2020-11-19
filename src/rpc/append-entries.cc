@@ -25,7 +25,7 @@ AppendEntries::AppendEntries(const json& serialized_json)
     , leader_commit_(serialized_json["leader_commit"])
 {
     for (const auto& entry : serialized_json["entries"])
-        entry.emplace_back(entry);
+        this->entries_.emplace_back(entry);
 }
 
 AppendEntries::AppendEntries(const std::string& serialized)
