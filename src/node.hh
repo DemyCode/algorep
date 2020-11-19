@@ -24,8 +24,8 @@ private:
     int offset;
     int size;
     int term;
-    float election_timeout; // 150 - 300 ms
-    float heart_beat; // 0 - 150 ms
+    //float election_timeout; // 150 - 300 ms
+    //float heart_beat; // 0 - 150 ms
 };
 
 

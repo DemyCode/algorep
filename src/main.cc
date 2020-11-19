@@ -8,7 +8,7 @@ int main(int argc, char* argv[])
 {
     if (argc != 3)
     {
-        std::cerr << "Usage : ./main n_client n_server";
+        std::cerr << "Usage: ./raft n_client n_server";
         exit(1);
     }
     int rank, size;
@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
     int n_node = std::atoi(argv[2]);
     if (size != n_node + n_client + 1)
     {
-        std::cerr << "Usage : mpirun -np size ./main n_client n_server" << std::endl;
+        std::cerr << "Usage: mpirun -np size ./raft n_client n_server" << std::endl;
         std::cerr << "where size == n_client + n_server + 1" << std::endl;
         exit(1);
     }

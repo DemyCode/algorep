@@ -18,7 +18,7 @@ void Node::run() {
 }
 
 void Node::candidate() {
-    this->term += 1;
+    /*this->term += 1;
     int vote_count = 1;
     std::vector<MPI_Request> requests = std::vector<MPI_Request>();
     for (int i = offset; i < offset + n_node; i++)
@@ -29,5 +29,5 @@ void Node::candidate() {
     for (int i = offset; i < offset + n_node; i++)
     {
         MPI_Irecv()
-    }
+    }*/
 }
