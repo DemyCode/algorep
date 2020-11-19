@@ -1,16 +1,20 @@
 #include "node.hh"
 
 Node::Node(int rank, int n_node, int offset, int size)
-{
-    this->rank_ = rank;
-    this->n_node_ = n_node;
-    this->offset_ = offset;
-    this->size_ = size;
-    this->state_ = state::FOLLOWER;
-
-    this->currentTerm = 0;
-    this->votedFor = -1;
-}
+    : rank_(rank)
+    , n_node_(n_node)
+    , offset_(offset)
+    , size_(size)
+    , state_(state::FOLLOWER)
+    , election_timeout(-1)
+    , current_term_(0)
+    , voted_for_(-1)
+    , log_() // TODO see initialization
+    , commit_index_(0)
+    , last_applied_(0)
+    , next_index_() // TODO see initialization
+    , match_index_() // TODO see initialization
+{}
 
 void Node::run()
 {
@@ -55,11 +59,11 @@ void Node::leader_run()
 
 void Node::candidate_run()
 {
-    this->currentTerm += 1;
+    /*this->currentTerm += 1;
     for (int i = 0; offset_ < n_node_; i++)
     {
         RequestVote requestVote(1, 1, 1, 1);
         std::string reqser = requestVote.serialize();
         MPI_Isend(&reqser, 1, MPI_CHAR, i, 0, MPI_COMM_WORLD, MPI_REQUEST_NULL);
-    }
+    }*/
 }

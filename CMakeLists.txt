@@ -27,30 +27,46 @@ set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -DRELEASE -DNDEBUG -march=native")
 set(MAIN_TARGET raft)
 
 ################## DIRECTORIES ##################
-include_directories(src json)
+include_directories(
+        src
+        lib)
 #################################################
 
 #################### SOURCES ####################
+# LIB SOURCES
+# JSON
+set(JSON_SOURCES
+        lib/json/json.hpp)
+
+set(LIB_SOURCES
+        ${JSON_SOURCES})
+
 # MAIN SOURCES
-# Exec
-set(EXEC_SOURCES
-        src/main.cc
-        src/mpiclasses/client.cc
-        src/mpiclasses/controller.cc
-        src/mpiclasses/node.cc
-        src/rpc/appendentries.cc
-        src/rpc/requestvote.cc
+set(MPI_CLASSES_SOURCE
+        src/mpi_classes/client.cc
+        src/mpi_classes/controller.cc
+        src/mpi_classes/node.cc)
+
+set(RPC_SOURCES
+        src/rpc/append-entries.cc
+        src/rpc/request-vote.cc
         src/rpc/entry.cc
-        json/json.hpp
-        src/rpc/requestvoteresponse.cc
-        src/rpc/requestvoteresponse.hh
-        src/rpc/appendentriesresponse.cc
-        src/rpc/requestvoteresponse.cc)
+        src/rpc/request-vote-response.cc
+        src/rpc/append-entries-response.cc
+        src/rpc/request-vote-response.cc)
+# Exec
+set(MAIN_SOURCES
+        ${MPI_CLASSES_SOURCE}
+        ${RPC_SOURCES})
+
+set(MAIN_EXEC_SOURCES
+        ${MAIN_SOURCES}
+        src/main.cc)
 #################################################
 
 # Main Executable
 add_executable(${MAIN_TARGET}
-        ${EXEC_SOURCES})
+        ${MAIN_EXEC_SOURCES})
 
 add_executable(test
                 test/test.cc)

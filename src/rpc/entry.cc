@@ -1,22 +1,25 @@
 #include "entry.hh"
 
 Entry::Entry(int term, std::string command)
-{
-    this->term = term;
-    this->command = command;
-}
+    : term_(term)
+    , command_(command)
+{}
 
-Entry::Entry(std::string serialized)
-{
-    json j = json::parse(serialized);
-    this->term = j["term"];
-    this->command = j["command"];
-}
+Entry::Entry(const json& serialized_json)
+    : term_(serialized_json["term"])
+    , command_(serialized_json["command"])
+{}
 
-std::string Entry::serialize()
+Entry::Entry(const std::string& serialized)
+    : Entry(json::parse(serialized))
+{}
+
+std::string Entry::serialize() const
 {
-    json j;
-    j["term"] = this->term;
-    j["command"] = this->command;
-    return j.dump();
+    json json_object;
+
+    json_object["term"] = this->term_;
+    json_object["command"] = this->command_;
+
+    return json_object.dump();
 }

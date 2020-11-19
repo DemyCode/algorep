@@ -3,15 +3,18 @@
 #include <json.hpp>
 #include <string>
 
-using json = nlohmann::json;
-
 class Entry
 {
 public:
-    Entry(int term, std::string command);
-    Entry(std::string serialized);
-    std::string serialize();
+    using json = nlohmann::json;
 
-    int term;
-    std::string command;
+    Entry(int term, std::string command);
+    Entry(const json& serialized_json);
+    Entry(const std::string& serialized);
+
+    std::string serialize() const;
+
+private:
+    const int term_;
+    const std::string command_;
 };
