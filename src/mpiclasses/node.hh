@@ -10,6 +10,7 @@
 #include <chrono>
 #include <string>
 #include <optional>
+#include <iostream>
 
 enum state {
     FOLLOWER, CANDIDATE, LEADER, STOPPED

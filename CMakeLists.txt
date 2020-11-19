@@ -27,7 +27,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-Ofast -DRELEASE -DNDEBUG -march=native")
 set(MAIN_TARGET raft)
 
 ################## DIRECTORIES ##################
-include_directories(src)
+include_directories(src json)
 #################################################
 
 #################### SOURCES ####################
@@ -38,9 +38,19 @@ set(EXEC_SOURCES
         src/mpiclasses/client.cc
         src/mpiclasses/controller.cc
         src/mpiclasses/node.cc
-        src/message/message.cc)
+        src/rpc/appendentries.cc
+        src/rpc/requestvote.cc
+        src/rpc/entry.cc
+        json/json.hpp
+        src/rpc/requestvoteresponse.cc
+        src/rpc/requestvoteresponse.hh
+        src/rpc/appendentriesresponse.cc
+        src/rpc/requestvoteresponse.cc)
 #################################################
 
 # Main Executable
 add_executable(${MAIN_TARGET}
         ${EXEC_SOURCES})
+
+add_executable(test
+                test/test.cc)
