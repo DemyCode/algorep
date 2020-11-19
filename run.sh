@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Define constants
-BUILD_DIRECTORY_LIST=("build" "cmake-build-release" "cmake-build-debug")
+BUILD_DIRECTORY_LIST="build cmake-build-release cmake-build-debug"
 EXEC_NAME="raft"
 
 print_usage()
@@ -39,7 +39,7 @@ build_path="$3"
 if [ $# -lt 3 ]; then
     echo "No build directory given, looking for one ..."
 
-    for path in "${BUILD_DIRECTORY_LIST[@]}"; do
+    for path in $BUILD_DIRECTORY_LIST; do
         if [ -d "${path}" ] && [ -x "${path}/${EXEC_NAME}" ]; then
             build_path="${path}"
             echo "Found path ${path}"
