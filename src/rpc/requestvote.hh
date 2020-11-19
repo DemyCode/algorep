@@ -1,16 +1,12 @@
-//
-// Created by mehdi on 19/11/2020.
-//
+#pragma once
 
-#ifndef ALGOREP_REQUESTVOTE_HH
-#define ALGOREP_REQUESTVOTE_HH
-
-#include <string>
 #include <json.hpp>
+#include <string>
 
 using json = nlohmann::json;
 
-class RequestVote {
+class RequestVote
+{
 public:
     RequestVote(int term, int candidateId, int lastLogIndex, int lastLogTerm);
     RequestVote(std::string serialized);
@@ -21,6 +17,3 @@ public:
     int lastLogIndex;
     int lastLogTerm;
 };
-
-
-#endif //ALGOREP_REQUESTVOTE_HH

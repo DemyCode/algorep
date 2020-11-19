@@ -1,21 +1,21 @@
-//
-// Created by mehdi on 19/11/2020.
-//
+#pragma once
 
-#ifndef ALGOREP_APPENDENTRIES_HH
-#define ALGOREP_APPENDENTRIES_HH
-
-#include <vector>
-#include <string>
-#include <rpc/entry.hh>
 #include <json.hpp>
+#include <rpc/entry.hh>
+#include <string>
+#include <vector>
 
 using json = nlohmann::json;
 
-class AppendEntries {
+class AppendEntries
+{
 public:
-    AppendEntries(int term, int leaderId, int preLogIndex,
-                  int prevLogTerm, std::vector<Entry> entries, int leaderCommit);
+    AppendEntries(int term,
+                  int leaderId,
+                  int preLogIndex,
+                  int prevLogTerm,
+                  std::vector<Entry> entries,
+                  int leaderCommit);
     AppendEntries(std::string serialized);
     std::string serialize();
 
@@ -26,6 +26,3 @@ public:
     std::vector<Entry> entries;
     int leaderCommit;
 };
-
-
-#endif //ALGOREP_APPENDENTRIES_HH

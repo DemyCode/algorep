@@ -1,13 +1,7 @@
-//
-// Created by mehdi on 18/11/2020.
-//
+#pragma once
 
-#ifndef ALGOREP_CLIENT_HH
-#define ALGOREP_CLIENT_HH
-
-
-class Client {
-
+class Client
+{
 public:
     Client(int rank, int n_client, int offset, int size);
 
@@ -18,6 +12,3 @@ public:
     int offset;
     int size;
 };
-
-
-#endif //ALGOREP_CLIENT_HH

@@ -1,7 +1,3 @@
-//
-// Created by mehdi on 19/11/2020.
-//
-
 #include "requestvoteresponse.hh"
 
 RequestVoteResponse::RequestVoteResponse(int term, bool voteGranted)

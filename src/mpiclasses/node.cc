@@ -1,7 +1,3 @@
-//
-// Created by mehdi on 18/11/2020.
-//
-
 #include "node.hh"
 
 Node::Node(int rank, int n_node, int offset, int size)

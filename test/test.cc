@@ -1,7 +1,3 @@
-//
-// Created by mehdi on 19/11/2020.
-//
-
 #include <iostream>
 #include <vector>
 
@@ -12,7 +8,8 @@ public:
     std::string command;
 };
 
-class AppendEntriesStruct {
+class AppendEntriesStruct
+{
 public:
     int leaderId;
     int prevLogIndex;

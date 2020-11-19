@@ -1,16 +1,12 @@
-//
-// Created by mehdi on 19/11/2020.
-//
+#pragma once
 
-#ifndef ALGOREP_APPENDENTRIESRESPONSE_HH
-#define ALGOREP_APPENDENTRIESRESPONSE_HH
-
-#include <string>
 #include <json.hpp>
+#include <string>
 
 using json = nlohmann::json;
 
-class AppendEntriesResponse {
+class AppendEntriesResponse
+{
     AppendEntriesResponse(int term, bool success);
     AppendEntriesResponse(std::string serialized);
     std::string serialized();
@@ -18,6 +14,3 @@ class AppendEntriesResponse {
     int term;
     bool success;
 };
-
-
-#endif //ALGOREP_APPENDENTRIESRESPONSE_HH

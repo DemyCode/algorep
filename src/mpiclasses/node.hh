@@ -1,33 +1,36 @@
-//
-// Created by mehdi on 18/11/2020.
-//
+#pragma once
 
-#ifndef ALGOREP_NODE_HH
-#define ALGOREP_NODE_HH
-
-#include <mpi.h>
-#include <vector>
 #include <chrono>
-#include <string>
-#include <optional>
 #include <iostream>
+#include <mpi.h>
+#include <optional>
 #include <rpc/requestvote.hh>
+#include <string>
+#include <vector>
 
-enum state {
-    FOLLOWER, CANDIDATE, LEADER, STOPPED
+enum state
+{
+    FOLLOWER,
+    CANDIDATE,
+    LEADER,
+    STOPPED
 };
 
-enum ping {
-    REQUESTVOTE, VOTE
+enum ping
+{
+    REQUESTVOTE,
+    VOTE
 };
 
-class Node {
+class Node
+{
 public:
     Node(int rank, int n_node, int offset, int size);
     void run();
     void follower_run();
     void leader_run();
     void candidate_run();
+
 private:
     // MPI VALUES
     int rank_;
@@ -49,6 +52,3 @@ private:
     std::vector<int> nextIndex;
     std::vector<int> matchIndex;
 };
-
-
-#endif //ALGOREP_NODE_HH
