@@ -9,6 +9,7 @@
 #include "rpc/entry.hh"
 #include "rpc/request-vote-response.hh"
 #include "rpc/request-vote.hh"
+#include "rpc/append-entries.hh"
 #include "utils/clock.hh"
 
 class Node
@@ -42,7 +43,8 @@ private:
     const int size_;
 
     state state_;
-    float election_timeout;
+    float election_timeout_;
+    float response_time_;
 
     // RAFT VALUES
     // Persistent on all servers (updated on stable storage before responding to RPCs)
