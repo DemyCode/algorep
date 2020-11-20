@@ -13,7 +13,6 @@ public:
 
     std::string serialized() const;
 
-private:
     // current_term, for candidate to update itself
     const int term_;
     // true means candidate received vote

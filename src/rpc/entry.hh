@@ -15,7 +15,6 @@ public:
 
     std::string serialize() const;
 
-private:
-    const int term_;
-    const std::string command_;
+    int term_;
+    std::string command_;
 };

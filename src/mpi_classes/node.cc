@@ -28,6 +28,7 @@ void Node::run()
             leader_run();
         if (this->state_ == state::CANDIDATE)
             candidate_run();
+        // TODO Create end of loop based on REPL state::STOPPED
     }
     return;
 }
@@ -38,6 +39,7 @@ void Node::follower_run()
     auto begin = high_resolution_clock::now();
     auto end = high_resolution_clock::now();
     auto elapsed_time = duration_cast<std::chrono::milliseconds>(end - begin).count();
+    // TODO Make follower run behavior
     while (elapsed_time < election_timeout)
     {
         // IF A CLIENT REQUEST A FOLLOWER REDIRECT IT TO LEADER
@@ -54,16 +56,60 @@ void Node::follower_run()
 
 void Node::leader_run()
 {
-    // LEADER HANDLE ALL REQUEST FROM CLIENT OR SERVER REDIRECTED REQUEST
+    // TODO LEADER RUN
 }
 
 void Node::candidate_run()
 {
-    /*this->currentTerm += 1;
-    for (int i = 0; offset_ < n_node_; i++)
+    this->current_term_ += 1;
+    this->voted_for_ = this->rank_;
+    int count_vote = 1;
+    std::vector<MPI_Request> mpi_reqs = std::vector<MPI_Request>();
+    // When doing communications accross server nodes the range is [offset_ : offset_ + n_node_]
+    for (int i = 0; i < n_node_; i++)
     {
-        RequestVote requestVote(1, 1, 1, 1);
+        int target_rank = offset_ + i;
+        mpi_reqs.push_back(MPI_Request());
+        if (this->rank_ == target_rank)
+            continue;
+        RequestVote requestVote(this->current_term_, this->rank_, log_.size() - 1, log_[log_.size() - 1].term_);
         std::string reqser = requestVote.serialize();
-        MPI_Isend(&reqser, 1, MPI_CHAR, i, 0, MPI_COMM_WORLD, MPI_REQUEST_NULL);
-    }*/
+        MPI_Isend(&reqser[0], reqser.size(), MPI_CHAR, target_rank, 0, MPI_COMM_WORLD, &mpi_reqs[i]);
+    }
+
+    // TODO SLEEP FOR SOME TIME
+    // sleep()
+
+    std::vector<RequestVoteResponse> vecrvr = std::vector<RequestVoteResponse>();
+    std::vector<MPI_Status> vecmpis = std::vector<MPI_Status>();
+    for (int i = offset_; i < n_node_; i++)
+    {
+        // MPI CHECK ANSWER FROM VOTER
+        if (i == this->rank_)
+            continue;
+        MPI_Status mpiStatus;
+        int flag;
+        MPI_Iprobe(i, 0, MPI_COMM_WORLD, &flag, &mpiStatus);
+        if (!flag)
+        {
+            MPI_Cancel(&mpi_reqs[i]);
+            continue;
+        }
+        int buffer_size;
+        MPI_Get_count(&mpiStatus, MPI_CHAR, &buffer_size);
+        char* buffer = (char *)malloc(buffer_size * sizeof(char));
+        MPI_Recv(buffer, buffer_size, MPI_CHAR, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        RequestVoteResponse requestVoteResponse = RequestVoteResponse(std::string(buffer));
+        free(buffer);
+
+        // TODO create behavior for responses
+        if (requestVoteResponse.term_ == this->current_term_)
+        {
+
+        }
+        if (requestVoteResponse.vote_granted_)
+        {
+            count_vote += 1;
+        }
+    }
 }

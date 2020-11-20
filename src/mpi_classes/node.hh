@@ -7,7 +7,9 @@
 #include <string>
 #include <vector>
 
+#include "rpc/entry.hh"
 #include "rpc/request-vote.hh"
+#include "rpc/request-vote-response.hh"
 
 class Node
 {
@@ -51,7 +53,7 @@ private:
     int voted_for_;
     // log entries; each entry contains command for state machine, and term when entry was received by leader (first
     // index is 1)
-    std::vector<std::string> log_;
+    std::vector<Entry> log_;
 
     // Volatile on all servers
 
