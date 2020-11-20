@@ -11,7 +11,7 @@ void send_message(const RPC& rpc_message, int destination, int tag)
 {
     MPI_Request request;
     send_message(rpc_message, destination, request, tag);
-    MPI_Request_free(request);
+    MPI_Request_free(&request);
 }
 
 std::shared_ptr<RPCQuery> receive_message(int source, int tag)
