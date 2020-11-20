@@ -1,6 +1,5 @@
 #pragma once
 
-#include <chrono>
 #include <iostream>
 #include <mpi.h>
 #include <optional>
@@ -8,8 +7,9 @@
 #include <vector>
 
 #include "rpc/entry.hh"
-#include "rpc/request-vote.hh"
 #include "rpc/request-vote-response.hh"
+#include "rpc/request-vote.hh"
+#include "utils/clock.hh"
 
 class Node
 {

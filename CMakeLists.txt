@@ -42,7 +42,7 @@ set(LIB_SOURCES
         ${JSON_SOURCES})
 
 # MAIN SOURCES
-set(MPI_CLASSES_SOURCE
+set(MPI_CLASSES_SOURCES
         src/mpi_classes/client.cc
         src/mpi_classes/controller.cc
         src/mpi_classes/node.cc)
@@ -54,10 +54,15 @@ set(RPC_SOURCES
         src/rpc/request-vote-response.cc
         src/rpc/append-entries-response.cc
         src/rpc/request-vote-response.cc)
+
+set(UTILS_SOURCES
+        src/utils/clock.cc)
+
 # Exec
 set(MAIN_SOURCES
-        ${MPI_CLASSES_SOURCE}
-        ${RPC_SOURCES})
+        ${MPI_CLASSES_SOURCES}
+        ${RPC_SOURCES}
+        ${UTILS_SOURCES})
 
 set(MAIN_EXEC_SOURCES
         ${MAIN_SOURCES}
@@ -67,7 +72,8 @@ set(MAIN_EXEC_SOURCES
 # Main Executable
 add_executable(${MAIN_TARGET}
         ${MAIN_EXEC_SOURCES}
-        ${LIB_SOURCES})
+        ${LIB_SOURCES}
+        ${UTILS_SOURCES})
 
 add_executable(test
                 test/test.cc)

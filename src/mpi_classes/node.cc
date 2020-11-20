@@ -35,22 +35,16 @@ void Node::run()
 
 void Node::follower_run()
 {
-    using namespace std::chrono;
-    auto begin = high_resolution_clock::now();
-    auto end = high_resolution_clock::now();
-    auto elapsed_time = duration_cast<std::chrono::milliseconds>(end - begin).count();
+    Clock clock = Clock();
     // TODO Make follower run behavior
-    while (elapsed_time < election_timeout)
+    while (clock.check() < election_timeout)
     {
-        // IF A CLIENT REQUEST A FOLLOWER REDIRECT IT TO LEADER
-
         // RESET TIMER IF RECEIVING APPENDENTRIES WITH EQUAL OR HIGHER TERM
         if (false /*something*/)
-            begin = high_resolution_clock::now();
-
-        // UPDATE TIMER
-        elapsed_time = duration_cast<std::chrono::milliseconds>(end - begin).count();
+            clock.reset();
     }
+    // IF A CLIENT REQUEST A FOLLOWER REDIRECT IT TO LEADER
+
     this->state_ = state::CANDIDATE;
 }
 
