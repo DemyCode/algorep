@@ -6,11 +6,12 @@
 #include <string>
 #include <vector>
 
+#include "rpc/append-entries.hh"
 #include "rpc/entry.hh"
 #include "rpc/request-vote-response.hh"
 #include "rpc/request-vote.hh"
-#include "rpc/append-entries.hh"
 #include "utils/clock.hh"
+#include "rpc/lib-rpc.hh"
 
 class Node
 {
@@ -45,6 +46,7 @@ private:
     state state_;
     float election_timeout_;
     float response_time_;
+    Clock clock_;
 
     // RAFT VALUES
     // Persistent on all servers (updated on stable storage before responding to RPCs)

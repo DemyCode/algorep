@@ -8,6 +8,7 @@ Node::Node(int rank, int n_node, int offset, int size)
     , state_(state::FOLLOWER)
     , election_timeout_(150)
     , response_time_(20)
+    , clock_()
     , current_term_(0)
     , voted_for_(-1)
     , log_() // TODO see initialization
@@ -36,9 +37,8 @@ void Node::run()
 
 void Node::follower_run()
 {
-    Clock clock = Clock();
     // TODO Make follower run behavior
-    while (clock.check() < election_timeout_)
+    while (clock_.check() < election_timeout_)
     {
         for (int i = offset_; i < n_node_; i++)
         {
@@ -62,7 +62,7 @@ void Node::follower_run()
         }
         // RESET TIMER IF RECEIVING APPENDENTRIES WITH EQUAL OR HIGHER TERM
         if (false /*something*/)
-            clock.reset();
+            this->clock_.reset();
     }
     // IF A CLIENT REQUEST A FOLLOWER REDIRECT IT TO LEADER
 
@@ -78,54 +78,49 @@ void Node::candidate_run()
 {
     this->current_term_ += 1;
     this->voted_for_ = this->rank_;
+    this->clock_.reset();
     int count_vote = 1;
-    std::vector<MPI_Request> mpi_reqs = std::vector<MPI_Request>();
+
     // When doing communications accross server nodes the range is [offset_ : offset_ + n_node_]
-    RequestVote requestVote(this->current_term_, this->rank_, log_.size() - 1, log_[log_.size() - 1].term_);
-    std::string reqser = requestVote.serialize();
+    RequestVote request_vote(this->current_term_, this->rank_, log_.size() - 1, log_[log_.size() - 1].term_);
     for (int i = offset_; i < offset_ + n_node_; i++)
     {
-        mpi_reqs.push_back(MPI_Request());
         if (this->rank_ == i)
             continue;
-        MPI_Isend(&reqser[0], reqser.size(), MPI_CHAR, i, 0, MPI_COMM_WORLD, &mpi_reqs[i - offset_]);
+        MPI_Request mpi_request;
+        send_message(request_vote, i, mpi_request);
+        MPI_Request_free(&mpi_request);
     }
 
-    // TODO SLEEP FOR SOME TIME
-    Clock clock = Clock();
-    while (clock.check() < response_time_)
-        ;
-
-    std::vector<RequestVoteResponse> vecrvr = std::vector<RequestVoteResponse>();
-    std::vector<MPI_Status> vecmpis = std::vector<MPI_Status>();
-    for (int i = offset_; i < offset_ + n_node_; i++)
+    while (clock_.check() < election_timeout_)
     {
-        // MPI CHECK ANSWER FROM VOTER
-        if (i == this->rank_)
-            continue;
-        MPI_Status mpi_status;
-        int flag;
-        MPI_Iprobe(i, 0, MPI_COMM_WORLD, &flag, &mpi_status);
-        if (!flag)
+        for (int i = offset_; i < offset_ + n_node_; i++)
         {
-            MPI_Cancel(&mpi_reqs[i - offset_]);
-            continue;
-        }
-        int buffer_size;
-        MPI_Get_count(&mpi_status, MPI_CHAR, &buffer_size);
-        char* buffer = (char*)malloc(buffer_size * sizeof(char));
-        MPI_Recv(buffer, buffer_size, MPI_CHAR, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        RequestVoteResponse requestVoteResponse = RequestVoteResponse(std::string(buffer));
-        free(buffer);
+            // MPI CHECK ANSWER FROM VOTER
+            if (i == this->rank_)
+                continue;
+            MPI_Status mpi_status;
+            int flag;
+            MPI_Iprobe(i, 0, MPI_COMM_WORLD, &flag, &mpi_status);
+            if (!flag)
+                continue;
+            RPCResponse response = receive_message(i);
+            if (response == nullptr)
+            {
 
-        // TODO create behavior for responses
-        if (requestVoteResponse.term_ == this->current_term_)
-        {
-            this->state_ = state::FOLLOWER;
-        }
-        if (requestVoteResponse.vote_granted_)
-        {
-            count_vote += 1;
+            }
+            else if (response.type_ == RPC::RPC_TYPE::REQUEST_VOTE_RESPONSE)
+            {
+
+            }
+            else if (response.type_ == RPC::RPC_TYPE::REQUEST_VOTE)
+            {
+
+            }
+            if (response.type_ == RPC::RPC_TYPE::APPEND_ENTRIES_RESPONSE)
+            {
+
+            }
         }
     }
 }
