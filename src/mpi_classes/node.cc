@@ -87,9 +87,7 @@ void Node::candidate_run()
     {
         if (this->rank_ == i)
             continue;
-        MPI_Request mpi_request;
-        send_message(request_vote_query, i, mpi_request);
-        MPI_Request_free(&mpi_request);
+        send_message(request_vote_query, i);
     }
 
     while (clock_.check() < election_timeout_)
@@ -113,23 +111,35 @@ void Node::candidate_run()
             else if (response->type_ == RPC::RPC_TYPE::REQUEST_VOTE)
             {
                 auto request_vote = std::get<RequestVote>(response->content_);
+                bool votegranted = false;
                 if (request_vote.term_ < this->current_term_)
+                    votegranted = false;
+                else if (request_vote.term_ > this->current_term_)
                 {
-                    RequestVoteResponse request_vote_response(this->current_term_, false);
-                    MPI_Request mpi_request;
-                    send_message(request_vote_response, request_vote.candidate_id_, mpi_request);
-                    MPI_Request_free(&mpi_request);
+                    votegranted = true;
+                    this->state_ = state::FOLLOWER;
+                    this->current_term_ = request_vote.term_;
                 }
+                else
+                {
+                    int node_last_term = log_[log_.size() - 1].term_;
+                    if (this->state_ == state::LEADER &&
+                        (this->voted_for_ == request_vote.candidate_id_ || this->voted_for_ == -1) &&
+                        (request_vote.last_log_term_ > node_last_term))
+                        votegranted = true;
+                }
+
+                RequestVoteResponse request_vote_response(this->current_term_, false);
+                send_message(request_vote_response, request_vote.candidate_id_);
             }
             else if (response->type_ == RPC::RPC_TYPE::APPEND_ENTRIES_RESPONSE)
             {
 
             }
         }
-        if (count_vote > n_node_ / 2)
-        {
+        if (count_vote > n_node_ / 2 && this->state_ == state::CANDIDATE)
             this->state_ = state::LEADER;
+        if (this->state_ != state::CANDIDATE)
             return;
-        }
     }
 }
