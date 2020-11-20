@@ -82,13 +82,13 @@ void Node::candidate_run()
     int count_vote = 1;
 
     // When doing communications accross server nodes the range is [offset_ : offset_ + n_node_]
-    RequestVote request_vote(this->current_term_, this->rank_, log_.size() - 1, log_[log_.size() - 1].term_);
+    RequestVote request_vote_query(this->current_term_, this->rank_, log_.size() - 1, log_[log_.size() - 1].term_);
     for (int i = offset_; i < offset_ + n_node_; i++)
     {
         if (this->rank_ == i)
             continue;
         MPI_Request mpi_request;
-        send_message(request_vote, i, mpi_request);
+        send_message(request_vote_query, i, mpi_request);
         MPI_Request_free(&mpi_request);
     }
 
@@ -99,28 +99,37 @@ void Node::candidate_run()
             // MPI CHECK ANSWER FROM VOTER
             if (i == this->rank_)
                 continue;
-            MPI_Status mpi_status;
-            int flag;
-            MPI_Iprobe(i, 0, MPI_COMM_WORLD, &flag, &mpi_status);
-            if (!flag)
-                continue;
-            RPCResponse response = receive_message(i);
+            auto response = receive_message(i);
             if (response == nullptr)
+                continue;
+            if (response->type_ == RPC::RPC_TYPE::REQUEST_VOTE_RESPONSE)
+            {
+                auto request_vote_response = std::get<RequestVoteResponse>(response->content_);
+                if (request_vote_response.vote_granted_)
+                {
+                    count_vote += 1;
+                }
+            }
+            else if (response->type_ == RPC::RPC_TYPE::REQUEST_VOTE)
+            {
+                auto request_vote = std::get<RequestVote>(response->content_);
+                if (request_vote.term_ < this->current_term_)
+                {
+                    RequestVoteResponse request_vote_response(this->current_term_, false);
+                    MPI_Request mpi_request;
+                    send_message(request_vote_response, request_vote.candidate_id_, mpi_request);
+                    MPI_Request_free(&mpi_request);
+                }
+            }
+            else if (response->type_ == RPC::RPC_TYPE::APPEND_ENTRIES_RESPONSE)
             {
 
             }
-            else if (response.type_ == RPC::RPC_TYPE::REQUEST_VOTE_RESPONSE)
-            {
-
-            }
-            else if (response.type_ == RPC::RPC_TYPE::REQUEST_VOTE)
-            {
-
-            }
-            if (response.type_ == RPC::RPC_TYPE::APPEND_ENTRIES_RESPONSE)
-            {
-
-            }
+        }
+        if (count_vote > n_node_ / 2)
+        {
+            this->state_ = state::LEADER;
+            return;
         }
     }
 }
