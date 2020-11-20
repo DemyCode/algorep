@@ -8,12 +8,12 @@
 #include "request-vote.hh"
 #include "rpc.hh"
 
-class RPCResponse
+class RPCQuery
 {
 public:
     using content_t = std::variant<AppendEntries, AppendEntriesResponse, Entry, RequestVote, RequestVoteResponse>;
 
-    RPCResponse(RPC::RPC_TYPE type, content_t content);
+    RPCQuery(RPC::RPC_TYPE type, content_t content);
 
     RPC::RPC_TYPE type_;
     content_t content_;
