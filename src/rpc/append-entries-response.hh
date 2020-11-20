@@ -3,8 +3,9 @@
 #include <string>
 
 #include "json/json.hpp"
+#include "rpc.hh"
 
-class AppendEntriesResponse
+class AppendEntriesResponse : public RPC
 {
 public:
     using json = nlohmann::json;
@@ -13,7 +14,7 @@ public:
     AppendEntriesResponse(const json& serialized_json);
     AppendEntriesResponse(const std::string& serialized);
 
-    std::string serialized() const;
+    json serialize_message() const override;
 
 private:
     // current_term, for leader to update itself

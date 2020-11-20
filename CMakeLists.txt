@@ -38,8 +38,18 @@ include_directories(
 set(JSON_SOURCES
         lib/json/json.hpp)
 
+# Utils
+# Clock
+set(UTILS_CLOCK_SOURCES
+        lib/utils/clock/clock.cc
+        lib/utils/clock/lib-clock.cc)
+
+set(UTILS_SOURCES
+        ${UTILS_CLOCK_SOURCES})
+
 set(LIB_SOURCES
-        ${JSON_SOURCES})
+        ${JSON_SOURCES}
+        ${UTILS_SOURCES})
 
 # MAIN SOURCES
 set(MPI_CLASSES_SOURCES
@@ -48,6 +58,9 @@ set(MPI_CLASSES_SOURCES
         src/mpi_classes/node.cc)
 
 set(RPC_SOURCES
+        src/rpc/rpc.cc
+        src/rpc/rpc-response.cc
+        src/rpc/lib-rpc.cc
         src/rpc/append-entries.cc
         src/rpc/request-vote.cc
         src/rpc/entry.cc
@@ -55,14 +68,10 @@ set(RPC_SOURCES
         src/rpc/append-entries-response.cc
         src/rpc/request-vote-response.cc)
 
-set(UTILS_SOURCES
-        src/utils/clock.cc)
-
 # Exec
 set(MAIN_SOURCES
         ${MPI_CLASSES_SOURCES}
-        ${RPC_SOURCES}
-        ${UTILS_SOURCES})
+        ${RPC_SOURCES})
 
 set(MAIN_EXEC_SOURCES
         ${MAIN_SOURCES}

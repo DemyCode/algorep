@@ -1,8 +1,9 @@
 #pragma once
 
 #include "json/json.hpp"
+#include "rpc.hh"
 
-class RequestVoteResponse
+class RequestVoteResponse : public RPC
 {
 public:
     using json = nlohmann::json;
@@ -11,7 +12,7 @@ public:
     RequestVoteResponse(const json& serialized_json);
     RequestVoteResponse(const std::string& serialized);
 
-    std::string serialized() const;
+    json serialize_message() const override;
 
     // current_term, for candidate to update itself
     const int term_;

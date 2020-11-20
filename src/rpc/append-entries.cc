@@ -8,7 +8,8 @@ AppendEntries::AppendEntries(int term,
                              int prev_log_term,
                              std::vector<Entry> entries,
                              int leader_commit)
-    : term_(term)
+    : RPC(RPC::RPC_TYPE::APPEND_ENTRIES)
+    , term_(term)
     , leader_id_(leader_id)
     , prev_log_index_(prev_log_index)
     , prev_log_term_(prev_log_term)
@@ -17,7 +18,8 @@ AppendEntries::AppendEntries(int term,
 {}
 
 AppendEntries::AppendEntries(const json& serialized_json)
-    : term_(serialized_json["term"])
+    : RPC(RPC::RPC_TYPE::APPEND_ENTRIES)
+    , term_(serialized_json["term"])
     , leader_id_(serialized_json["leader_id"])
     , prev_log_index_(serialized_json["prev_log_index"])
     , prev_log_term_(serialized_json["prev_log_term"])
@@ -32,7 +34,7 @@ AppendEntries::AppendEntries(const std::string& serialized)
     : AppendEntries(json::parse(serialized))
 {}
 
-std::string AppendEntries::serialize() const
+AppendEntries::json AppendEntries::serialize_message() const
 {
     json json_object;
 
@@ -42,9 +44,9 @@ std::string AppendEntries::serialize() const
     json_object["prev_log_term"] = this->prev_log_term_;
 
     for (auto& entry : this->entries_)
-        json_object["entries"].emplace_back(entry.serialize());
+        json_object["entries"].emplace_back(entry.serialize_message());
 
     json_object["leader_commit"] = this->leader_commit_;
 
-    return json_object.dump();
+    return json_object;
 }

@@ -4,9 +4,10 @@
 #include <vector>
 
 #include "json/json.hpp"
+#include "rpc.hh"
 #include "rpc/entry.hh"
 
-class AppendEntries
+class AppendEntries : public RPC
 {
 public:
     using json = nlohmann::json;
@@ -20,7 +21,7 @@ public:
     AppendEntries(const json& serialized_json);
     AppendEntries(const std::string& serialized);
 
-    std::string serialize() const;
+    json serialize_message() const override;
 
 private:
     // leader's term

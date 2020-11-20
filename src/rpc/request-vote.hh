@@ -3,8 +3,9 @@
 #include <string>
 
 #include "json/json.hpp"
+#include "rpc.hh"
 
-class RequestVote
+class RequestVote : public RPC
 {
 public:
     using json = nlohmann::json;
@@ -13,7 +14,7 @@ public:
     RequestVote(const json& serialized);
     RequestVote(const std::string& serialized);
 
-    std::string serialize() const;
+    json serialize_message() const override;
 
 private:
     // candidate's term
