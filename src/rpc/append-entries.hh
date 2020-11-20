@@ -23,7 +23,6 @@ public:
 
     json serialize_message() const override;
 
-private:
     // leader's term
     const int term_;
     // so follower can redirect clients

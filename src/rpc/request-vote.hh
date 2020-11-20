@@ -16,7 +16,6 @@ public:
 
     json serialize_message() const override;
 
-private:
     // candidate's term
     const int term_;
     // candidate requesting vote
