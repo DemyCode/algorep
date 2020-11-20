@@ -42,7 +42,7 @@ set(JSON_SOURCES
 # Clock
 set(UTILS_CLOCK_SOURCES
         lib/utils/clock/clock.cc
-        lib/utils/clock/lib-clock.cc)
+        )
 
 set(UTILS_SOURCES
         ${UTILS_CLOCK_SOURCES})

@@ -13,3 +13,8 @@ void Clock::reset()
 {
     this->begin_ = high_resolution_clock_t::now();
 }
+
+void Clock::wait(int milliseconds)
+{
+    std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
+}
