@@ -7,7 +7,7 @@ void send_message(const RPC& rpc_message, int destination, MPI_Request& request,
         serialized_message.c_str(), serialized_message.size(), MPI_CHAR, destination, tag, MPI_COMM_WORLD, &request);
 }
 
-RPCResponse receive_message(int source, int tag)
+RPCQuery receive_message(int source, int tag)
 {
     int buffer_size = 0;
     MPI_Status mpi_status;
@@ -27,18 +27,18 @@ RPCResponse receive_message(int source, int tag)
     switch (message_type)
     {
         case RPC::RPC_TYPE::APPEND_ENTRIES:
-            return RPCResponse(message_type, RPCResponse::content_t(AppendEntries(message_content)));
+            return RPCQuery(message_type, RPCQuery::content_t(AppendEntries(message_content)));
 
         case RPC::RPC_TYPE::APPEND_ENTRIES_RESPONSE:
-            return RPCResponse(message_type, RPCResponse::content_t(AppendEntriesResponse(message_content)));
+            return RPCQuery(message_type, RPCQuery::content_t(AppendEntriesResponse(message_content)));
 
         case RPC::RPC_TYPE::ENTRY:
-            return RPCResponse(message_type, RPCResponse::content_t(Entry(message_content)));
+            return RPCQuery(message_type, RPCQuery::content_t(Entry(message_content)));
 
         case RPC::RPC_TYPE::REQUEST_VOTE:
-            return RPCResponse(message_type, RPCResponse::content_t(RequestVote(message_content)));
+            return RPCQuery(message_type, RPCQuery::content_t(RequestVote(message_content)));
 
         case RPC::RPC_TYPE::REQUEST_VOTE_RESPONSE:
-            return RPCResponse(message_type, RPCResponse::content_t(RequestVoteResponse(message_content)));
+            return RPCQuery(message_type, RPCQuery::content_t(RequestVoteResponse(message_content)));
     }
 }

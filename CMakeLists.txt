@@ -41,8 +41,7 @@ set(JSON_SOURCES
 # Utils
 # Clock
 set(UTILS_CLOCK_SOURCES
-        lib/utils/clock/clock.cc
-        )
+        lib/utils/clock/clock.cc)
 
 set(UTILS_SOURCES
         ${UTILS_CLOCK_SOURCES})
@@ -59,7 +58,7 @@ set(MPI_CLASSES_SOURCES
 
 set(RPC_SOURCES
         src/rpc/rpc.cc
-        src/rpc/rpc-response.cc
+        src/rpc/rpc-query.cc
         src/rpc/lib-rpc.cc
         src/rpc/append-entries.cc
         src/rpc/request-vote.cc
