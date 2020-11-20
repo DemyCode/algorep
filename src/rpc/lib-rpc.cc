@@ -7,6 +7,13 @@ void send_message(const RPC& rpc_message, int destination, MPI_Request& request,
         serialized_message.c_str(), serialized_message.size(), MPI_CHAR, destination, tag, MPI_COMM_WORLD, &request);
 }
 
+void send_message(const RPC& rpc_message, int destination, int tag)
+{
+    MPI_Request request;
+    send_message(rpc_message, destination, request, tag);
+    MPI_Request_free(request);
+}
+
 std::shared_ptr<RPCQuery> receive_message(int source, int tag)
 {
     MPI_Status mpi_status;
