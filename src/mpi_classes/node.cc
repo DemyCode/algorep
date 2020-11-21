@@ -87,7 +87,7 @@ void Node::all_server_check(const std::vector<std::optional<RPCQuery>>& queries)
 void Node::follower_check(const std::vector<std::optional<RPCQuery>>& queries)
 {
     // TODO
-    for (const auto &query : queries)
+    for (const auto& query : queries)
     {
         if (!query.has_value())
             continue;
@@ -102,7 +102,7 @@ void Node::follower_check(const std::vector<std::optional<RPCQuery>>& queries)
 
 void Node::leader_check(const std::vector<std::optional<RPCQuery>>& queries)
 {
-    for (const auto &query : queries)
+    for (const auto& query : queries)
     {
         if (!query.has_value())
             continue;
@@ -116,12 +116,12 @@ void Node::leader_check(const std::vector<std::optional<RPCQuery>>& queries)
             {
                 if (this->rank_ == i)
                     continue;
-                send_message(AppendEntries(this->current_term_, this->rank_,
-                                                this->log_.size() - 2,
-                                                this->log[this->log_.size() - 2].term,
-                                                std::vector<Entry>(new_entry),
-                                                this->commit_index_));
-
+                send_message(AppendEntries(this->current_term_,
+                                           this->rank_,
+                                           this->log_.size() - 2,
+                                           this->log_[this->log_.size() - 2].term_,
+                                           std::vector<Entry>{new_entry},
+                                           this->commit_index_));
             }
         }
     }
@@ -129,7 +129,7 @@ void Node::leader_check(const std::vector<std::optional<RPCQuery>>& queries)
 
 void Node::candidate_check(const std::vector<std::optional<RPCQuery>>& queries)
 {
-    for (const auto &query : queries)
+    for (const auto& query : queries)
     {
         if (!query.has_value())
             continue;
@@ -156,28 +156,49 @@ void Node::convert_to_leader()
     this->state_ = state::LEADER;
     this->clock_.reset();
     // Envoyer heartbeat à tous les serveurs
-    AppendEntries empty_append = AppendEntries(this->current_term_,
-                                                this->rank_;
-                                                //int prev_log_index,
-                                                0,
-                                                //int prev_log_term,
-                                                0,
-                                                std::vector<Entry>(),
-                                                this->commit_index_);
+    AppendEntries empty_append = AppendEntries(this->current_term_, this->rank_,
+                                               // int prev_log_index,
+                                               0,
+                                               // int prev_log_term,
+                                               0,
+                                               std::vector<Entry>(),
+                                               this->commit_index_);
     send_to_all(offset_, n_node_, empty_append, 0);
 }
 
 void Node::handle_append_entries(const std::optional<RPCQuery>& query)
 {
     AppendEntries append_entry = std::get<AppendEntries>(query->content_);
-    
+
     if (append_entry.term_ < this->current_term_)
-    {
-        send_message(AppendEntriesResponse(this->current_term_, False), append_entry.leader_id_);
+    { // 1.
+        send_message(AppendEntriesResponse(this->current_term_, false), append_entry.leader_id_);
         return;
     }
-    if (this->log.size() > append_entry.prev_log_index_ && this->log_[append_entry.prev_log_index_].term_ != append_entry.prev_log_term_)
-    send_message(AppendEntriesResponse(0, True), append_entry.leader_id_);
+    if ((int)log_.size() > append_entry.prev_log_index_
+        && this->log_[append_entry.prev_log_index_].term_ != append_entry.prev_log_term_)
+    { // 2.
+        send_message(AppendEntriesResponse(append_entry.term_, false), append_entry.leader_id_);
+        return;
+    }
+    send_message(AppendEntriesResponse(append_entry.term_, true), append_entry.leader_id_);
+    std::vector<Entry> new_log = std::vector<Entry>();
+    for (int i = 0; i < append_entry.prev_log_index_; i++)
+        new_log.push_back(log_[i]);
+    size_t i = 0;
+    for (; i < append_entry.entries_.size(); i++)
+    {
+        if (log_[append_entry.prev_log_index_ + i].term_ == append_entry.entries_[i].term_)
+            new_log.push_back(log_[append_entry.prev_log_index_ + i]);
+        else
+            break;
+    }
+    i -= 1;
+    for (; i < append_entry.entries_.size(); i++)
+        new_log.push_back(append_entry.entries_[append_entry.prev_log_index_ + i]);
+    log_ = new_log;
+    if (append_entry.leader_commit_ > commit_index_)
+        commit_index_ = std::min(append_entry.leader_commit_, (int)append_entry.entries_.size() - 1);
 }
 
 void Node::handle_request_vote(const std::optional<RPCQuery>& query)
