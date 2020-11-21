@@ -7,15 +7,15 @@ RequestVote::RequestVote(int term, int candidate_id, int last_log_index, int las
     , last_log_term_(last_log_term)
 {}
 
-RequestVote::RequestVote(const json& serialized_json)
-    : RequestVote(serialized_json["term"],
+RequestVote::RequestVote(int term, const json& serialized_json)
+    : RequestVote(term,
                   serialized_json["candidate_id"],
                   serialized_json["last_log_index"],
                   serialized_json["last_log_term"])
 {}
 
-RequestVote::RequestVote(const std::string& serialized)
-    : RequestVote(json::parse(serialized))
+RequestVote::RequestVote(int term, onst std::string& serialized)
+    : RequestVote(term, json::parse(serialized))
 {}
 
 RequestVote::json RequestVote::serialize_message() const

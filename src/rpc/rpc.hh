@@ -12,7 +12,11 @@ public:
         APPEND_ENTRIES,
         APPEND_ENTRIES_RESPONSE,
         REQUEST_VOTE,
-        REQUEST_VOTE_RESPONSE
+        REQUEST_VOTE_RESPONSE,
+        NEW_ENTRY,
+        NEW_ENTRY_RESPONSE,
+        SEARCH_LEADER,
+        SEARCH_LEADER_RESPONSE
     };
 
     using json = nlohmann::json;
@@ -24,7 +28,5 @@ public:
     virtual json serialize_message() const = 0;
 
     const int term_;
-
-private:
     const RPC_TYPE rpc_type_;
 };

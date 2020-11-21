@@ -11,8 +11,8 @@ public:
     using json = nlohmann::json;
 
     RequestVote(int term, int candidate_id, int last_log_index, int last_log_term);
-    RequestVote(const json& serialized);
-    RequestVote(const std::string& serialized);
+    RequestVote(int term, const json& serialized);
+    RequestVote(int term, const std::string& serialized);
 
     json serialize_message() const override;
 

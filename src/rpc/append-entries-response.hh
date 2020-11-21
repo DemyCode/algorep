@@ -11,8 +11,8 @@ public:
     using json = nlohmann::json;
 
     AppendEntriesResponse(int term, bool success);
-    AppendEntriesResponse(const json& serialized_json);
-    AppendEntriesResponse(const std::string& serialized);
+    AppendEntriesResponse(int term, const json& serialized_json);
+    AppendEntriesResponse(int term, const std::string& serialized);
 
     json serialize_message() const override;
 

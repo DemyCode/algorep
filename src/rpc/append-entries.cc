@@ -16,8 +16,8 @@ AppendEntries::AppendEntries(int term,
     , leader_commit_(leader_commit)
 {}
 
-AppendEntries::AppendEntries(const json& serialized_json)
-    : RPC(serialized_json["term"], RPC::RPC_TYPE::APPEND_ENTRIES)
+AppendEntries::AppendEntries(int term, const json& serialized_json)
+    : RPC(term, RPC::RPC_TYPE::APPEND_ENTRIES)
     , leader_id_(serialized_json["leader_id"])
     , prev_log_index_(serialized_json["prev_log_index"])
     , prev_log_term_(serialized_json["prev_log_term"])
@@ -28,8 +28,8 @@ AppendEntries::AppendEntries(const json& serialized_json)
         this->entries_.emplace_back(entry);
 }
 
-AppendEntries::AppendEntries(const std::string& serialized)
-    : AppendEntries(json::parse(serialized))
+AppendEntries::AppendEntries(int term, const std::string& serialized)
+    : AppendEntries(term, json::parse(serialized))
 {}
 
 AppendEntries::json AppendEntries::serialize_message() const

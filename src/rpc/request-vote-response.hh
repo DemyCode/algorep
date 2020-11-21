@@ -9,8 +9,8 @@ public:
     using json = nlohmann::json;
 
     RequestVoteResponse(int term, bool vote_granted_);
-    RequestVoteResponse(const json& serialized_json);
-    RequestVoteResponse(const std::string& serialized);
+    RequestVoteResponse(int term, const json& serialized_json);
+    RequestVoteResponse(int term, const std::string& serialized);
 
     json serialize_message() const override;
 
