@@ -38,7 +38,6 @@ void Node::run()
         else if (this->state_ == state::LEADER)
             this->leader_check(queries);
 
-
         // TODO Create end of loop based on REPL state::STOPPED
         return;
     }
@@ -117,8 +116,23 @@ void Node::candidate_check(const std::vector<std::optional<RPCQuery>>& queries)
             RequestVoteResponse request_vote_response = std::get<RequestVoteResponse>(query->content_);
             vote_count_ += request_vote_response.vote_granted_ ? 1 : 0;
         }
+        if (query->type_ == RPC::RPC_TYPE::APPEND_ENTRIES)
+        {
+            AppendEntries append_entries = std::get<AppendEntries>(query->content_);
+            if (append_entries.term_ > current_term_)
+                this->state_ = state::FOLLOWER;
+        }
     }
-    if (vote_count_ > )
+    if (vote_count_ > n_node_ / 2)
+        convert_to_leader();
+    if (clock_.check() > election_timeout_)
+        convert_to_candidate();
+}
+
+void Node::convert_to_leader()
+{
+    this->state_ = state::LEADER;
+    this->clock_.reset();
 }
 
 void Node::handle_request_vote(const std::optional<RPCQuery>& query)
