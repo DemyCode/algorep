@@ -85,14 +85,19 @@ std::optional<RPCQuery> receive_message(int source, int tag)
     }
 }
 
-void receive_all_messages(int offset, int n_node, std::vector<std::optional<RPCQuery>>& queries, int tag)
+void receive_all_messages(int offset, int n_node, std::vector<RPCQuery>& queries, int tag)
 {
     // PROBING IS BASICALLY TRYING TO RECEIVE FROM ALL SERVERS
     // AND STOCKING EVERY MESSAGE : std::vector<RPC> messages
     // where messages.size() == n_node_
 
     for (int source_rank = offset; source_rank < offset + n_node; source_rank++)
-        queries.emplace_back(receive_message(source_rank, tag));
+    {
+        auto query = receive_message(source_rank, tag);
+
+        if (query.has_value())
+            queries.emplace_back(query.value());
+    }
 }
 
 void send_to_all(int offset, int n_node, const RPC& rpc_message, int tag)
