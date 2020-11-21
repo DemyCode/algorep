@@ -7,8 +7,8 @@ Node::Node(int rank, int n_node, int offset, int size)
     , size_(size)
     , state_(state::FOLLOWER)
     , election_timeout_(150)
-    , response_time_(20)
     , clock_()
+    , vote_count_(0)
     , current_term_(0)
     , voted_for_(-1)
     , log_() // TODO see initialization
@@ -26,16 +26,18 @@ void Node::run()
     {
         std::vector<std::optional<RPCQuery>> queries;
         receive_all_messages(this->offset_, this->n_node_, queries);
-        this->handle_queries(queries);
 
         this->all_server_check(queries);
 
         if (this->state_ == state::FOLLOWER)
             this->follower_check(queries);
-        else if (this->state_ == state::LEADER)
-            this->leader_check(queries);
+
         else if (this->state_ == state::CANDIDATE)
             this->candidate_check(queries);
+
+        else if (this->state_ == state::LEADER)
+            this->leader_check(queries);
+
 
         // TODO Create end of loop based on REPL state::STOPPED
         return;
@@ -43,25 +45,23 @@ void Node::run()
     return;
 }
 
-void Node::handle_queries(const std::vector<std::optional<RPCQuery>>& queries)
-{
-    for (const auto& query : queries)
-    {
-        if (query.has_value())
-            continue;
-
-        if (query->type_ == RPC::RPC_TYPE::APPEND_ENTRIES)
-            this->handle_append_entries(query);
-        else if (query->type_ == RPC::RPC_TYPE::REQUEST_VOTE)
-            this->handle_request_vote(query);
-    }
-}
-
 void Node::convert_to_candidate()
 {
     // TODO IMPLEMENTATION NEEDS BE DONE
     // THIS SECTION REFERS TO : RULES FOR SERVER -> CANDIDATES -> ON CONVERSION TO CANDIDATE, START ELECTION
     // THIS FUNCTION ONLY COVERS THE FIRST POINT THE THREE OTHERS ARE HANDLED THROUGH PROBING
+    this->state_ = state::CANDIDATE;
+    this->voted_for_ = this->rank_;
+    this->vote_count_ = 1;
+    this->clock_.reset();
+    // When doing communications across server nodes the range is [offset_ : offset_ + n_node_]
+    RequestVote request_vote_query(this->current_term_, this->rank_, log_.size() - 1, log_[log_.size() - 1].term_);
+    for (int i = offset_; i < offset_ + n_node_; i++)
+    {
+        if (this->rank_ == i)
+            continue;
+        send_message(request_vote_query, i);
+    }
 }
 
 void Node::all_server_check(const std::vector<std::optional<RPCQuery>>& queries)
@@ -75,13 +75,30 @@ void Node::all_server_check(const std::vector<std::optional<RPCQuery>>& queries)
 
     for (const auto& query : queries)
     {
-
+        if (query == std::nullopt)
+            continue;
+        if (query->term_ > current_term_)
+        {
+            current_term_ = query->term_;
+            state_ = state::FOLLOWER;
+        }
     }
 }
 
 void Node::follower_check(const std::vector<std::optional<RPCQuery>>& queries)
 {
     // TODO
+    for (const auto &query : queries)
+    {
+        if (!query.has_value())
+            continue;
+        if (query->type_ == RPC::RPC_TYPE::REQUEST_VOTE)
+            this->handle_request_vote(query);
+        if (query->type_ == RPC::RPC_TYPE::APPEND_ENTRIES)
+            this->handle_append_entries(query);
+    }
+    if (this->clock_.check() > election_timeout_)
+        convert_to_candidate();
 }
 
 void Node::leader_check(const std::vector<std::optional<RPCQuery>>& queries)
@@ -91,66 +108,17 @@ void Node::leader_check(const std::vector<std::optional<RPCQuery>>& queries)
 
 void Node::candidate_check(const std::vector<std::optional<RPCQuery>>& queries)
 {
-    this->current_term_ += 1;
-    this->voted_for_ = this->rank_;
-    this->clock_.reset();
-    int count_vote = 1;
-
-    // When doing communications across server nodes the range is [offset_ : offset_ + n_node_]
-    RequestVote request_vote_query(this->current_term_, this->rank_, log_.size() - 1, log_[log_.size() - 1].term_);
-    for (int i = offset_; i < offset_ + n_node_; i++)
+    for (const auto &query : queries)
     {
-        if (this->rank_ == i)
+        if (!query.has_value())
             continue;
-        send_message(request_vote_query, i);
-    }
-
-    while (clock_.check() < election_timeout_)
-    {
-        for (int i = offset_; i < offset_ + n_node_; i++)
+        if (query->type_ == RPC::RPC_TYPE::REQUEST_VOTE_RESPONSE)
         {
-            // MPI CHECK ANSWER FROM VOTER
-            if (i == this->rank_)
-                continue;
-            auto response = receive_message(i);
-            if (response == nullptr)
-                continue;
-            if (response->type_ == RPC::RPC_TYPE::REQUEST_VOTE_RESPONSE)
-            {
-                auto request_vote_response = std::get<RequestVoteResponse>(response->content_);
-                if (request_vote_response.vote_granted_)
-                {
-                    count_vote += 1;
-                }
-            }
-            else if (response->type_ == RPC::RPC_TYPE::REQUEST_VOTE)
-            {
-                // TODO FUNCTION NOT DONE PLEASE REVIEW : REFER TO Request Vote RPC Receiver Implementation
-                this->handle_request_vote(response);
-            }
-            else if (response->type_ == RPC::RPC_TYPE::APPEND_ENTRIES)
-            {
-                // TODO NEED ITS OWN FUNCTION + NOT DONE PLEASE REVIEW : REFER TO AppendEntries RPC Receiver
-                // Implementation
-                auto append_entries = std::get<AppendEntries>(response->content_);
-                if (append_entries.term_ < current_term_)
-                    send_message(AppendEntriesResponse(this->current_term_, false), append_entries.leader_id_);
-                else if (log_.size() < append_entries.prev_log_index_
-                         || log_[append_entries.prev_log_index_].term_ != append_entries.prev_log_term_)
-                    send_message(AppendEntriesResponse(this->current_term_, false), append_entries.leader_id_);
-                else
-                {
-                    this->current_term_ = append_entries.term_;
-                    this->state_ = state::FOLLOWER;
-                    send_message(AppendEntriesResponse(this->current_term_, true), append_entries.leader_id_);
-                }
-            };
+            RequestVoteResponse request_vote_response = std::get<RequestVoteResponse>(query->content_);
+            vote_count_ += request_vote_response.vote_granted_ ? 1 : 0;
         }
-        if (count_vote > n_node_ / 2 && this->state_ == state::CANDIDATE)
-            this->state_ = state::LEADER;
-        if (this->state_ != state::CANDIDATE)
-            return;
     }
+    if (vote_count_ > )
 }
 
 void Node::handle_request_vote(const std::optional<RPCQuery>& query)
@@ -177,19 +145,4 @@ void Node::handle_request_vote(const std::optional<RPCQuery>& query)
 
     RequestVoteResponse request_vote_response(this->current_term_, vote_granted);
     send_message(request_vote_response, request_vote.candidate_id_);
-}
-
-void Node::handle_append_entries(const std::optional<RPCQuery>& query)
-{
-    // TODO
-}
-
-void Node::handle_request_vote_response(const std::optional<RPCQuery>& query)
-{
-    // TODO
-}
-
-void Node::handle_append_entries_response(const std::optional<RPCQuery>& query)
-{
-    // TODO
 }

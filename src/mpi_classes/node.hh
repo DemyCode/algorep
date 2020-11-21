@@ -56,8 +56,8 @@ private:
 
     state state_;
     float election_timeout_;
-    float response_time_;
     Clock clock_;
+    int vote_count_;
 
     // RAFT VALUES
     // Persistent on all servers (updated on stable storage before responding to RPCs)
