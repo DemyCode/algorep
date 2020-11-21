@@ -16,12 +16,13 @@ public:
         SERVER_RECOVER
     };
 
-    Message(MESSAGE_TYPE message_type, std::string message_content);
+    Message(int uid, MESSAGE_TYPE message_type, std::string message_content);
     Message(const json& serialized_json);
     Message(const std::string& serialized);
 
     json serialize_message() const override;
 
+    const int uid_;
     const MESSAGE_TYPE message_type_;
     const std::string message_content_;
 };
