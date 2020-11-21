@@ -37,7 +37,9 @@ private:
     void follower_run();
     void leader_run();
     void candidate_run();
-
+    std::vector<std::shared_ptr<RPCQuery>> probing();
+    void allservercheck(std::vector<std::shared_ptr<RPCQuery>> messages);
+    void convert_to_candidate();
     void handle_request_vote(const std::shared_ptr<RPCQuery>& response);
 
     // MPI VALUES

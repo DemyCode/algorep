@@ -24,6 +24,8 @@ void Node::run()
     std::cout << "Node " << this->rank_ << " running." << std::endl;
     while (running)
     {
+        std::vector<std::shared_ptr<RPCQuery>> messages = probing();
+        this->allservercheck(messages);
         if (this->state_ == state::FOLLOWER)
             follower_run();
         if (this->state_ == state::LEADER)
@@ -35,9 +37,87 @@ void Node::run()
     return;
 }
 
+void Node::allservercheck(std::vector<std::shared_ptr<RPCQuery>> messages)
+{
+    // TODO IMPLEMENTATION NEEDS TO BE DONE
+    // THIS SECTION REFER TO THE PART : RULES FOR SERVER -> ALL RULES
+    if (this->commit_index_ > this->last_applied_)
+    {
+        last_applied_ += 1;
+        // TODO : APPLY LOG LAST APPLY TO STATE MACHINE
+    }
+    for (auto message : messages)
+    {
+        if (message == nullptr)
+            continue;
+
+        // TODO : COULD BE COMPACTED AS RPC rpc = message->content_
+        // if (rpc.term > current_term_) ...
+
+        if (message->type_ == RPC::RPC_TYPE::APPEND_ENTRIES)
+        {
+            auto append_entries = std::get<AppendEntries>(message->content_);
+            if (append_entries.term_ > current_term_)
+            {
+                this->current_term_ = append_entries.term_;
+                this->state_ = state::FOLLOWER;
+            }
+        }
+        if (message->type_ == RPC::RPC_TYPE::APPEND_ENTRIES_RESPONSE)
+        {
+            auto append_entries = std::get<AppendEntriesResponse>(message->content_);
+            if (append_entries.term_ > current_term_)
+            {
+                this->current_term_ = append_entries.term_;
+                this->state_ = state::FOLLOWER;
+            }
+        }
+        if (message->type_ == RPC::RPC_TYPE::REQUEST_VOTE)
+        {
+            auto append_entries = std::get<RequestVote>(message->content_);
+            if (append_entries.term_ > current_term_)
+            {
+                this->current_term_ = append_entries.term_;
+                this->state_ = state::FOLLOWER;
+            }
+        }
+        if (message->type_ == RPC::RPC_TYPE::REQUEST_VOTE_RESPONSE)
+        {
+            auto append_entries = std::get<RequestVoteResponse>(message->content_);
+            if (append_entries.term_ > current_term_)
+            {
+                this->current_term_ = append_entries.term_;
+                this->state_ = state::FOLLOWER;
+            }
+        }
+    }
+}
+
+void Node::convert_to_candidate()
+{
+    // TODO IMPLEMENTATION NEEDS BE DONE
+    // THIS SECTION REFERS TO : RULES FOR SERVER -> CANDIDATES -> ON CONVERSION TO CANDIDATE, START ELECTION
+    // THIS FUNCTION ONLY COVERS THE FIRST POINT THE THREE OTHERS ARE HANDLED THROUGH PROBING
+}
+
+std::vector<std::shared_ptr<RPCQuery>> Node::probing()
+{
+    // TODO WE NEED TO PROBE MESSAGES AT EVERY LOOP
+    // PROBING IS BASICALLY TRYING TO RECEIVE FROM ALL SERVERS
+    // AND STOCKING EVERY MESSAGE : std::vector<RPC> messages
+    // where messages.size() == n_node_
+    std::vector<std::shared_ptr<RPCQuery>> rpcqueries = std::vector<std::shared_ptr<RPCQuery>>();
+    for (int i = offset_; i < offset_ + n_node_; i++)
+        rpcqueries.push_back(receive_message(i));
+    return rpcqueries;
+}
+
 void Node::follower_run()
 {
-    // TODO Make follower run behavior
+    // THIS FUNCTION BODY IS OUTDATED IT STAYS HERE FOR COMPREHENSION
+    //
+
+    /*
     while (clock_.check() < election_timeout_)
     {
         for (int i = offset_; i < n_node_; i++)
@@ -61,12 +141,12 @@ void Node::follower_run()
             // TODO create behavior for RPC TYPE
         }
         // RESET TIMER IF RECEIVING APPENDENTRIES WITH EQUAL OR HIGHER TERM
-        if (false /*something*/)
+        if (false something)
             this->clock_.reset();
     }
     // IF A CLIENT REQUEST A FOLLOWER REDIRECT IT TO LEADER
 
-    this->state_ = state::CANDIDATE;
+    this->state_ = state::CANDIDATE;*/
 }
 
 void Node::leader_run()
@@ -110,13 +190,25 @@ void Node::candidate_run()
             }
             else if (response->type_ == RPC::RPC_TYPE::REQUEST_VOTE)
             {
+                // TODO FUNCTION NOT DONE PLEASE REVIEW : REFER TO Request Vote RPC Receiver Implementation
                 this->handle_request_vote(response);
             }
-            else if (response->type_ == RPC::RPC_TYPE::APPEND_ENTRIES_RESPONSE)
+            else if (response->type_ == RPC::RPC_TYPE::APPEND_ENTRIES)
             {
-                auto append_entries_response = std::get<AppendEntriesResponse>(response->content_);
-                if (append_entries_response.term_ > this->current_term_)
+                // TODO NEED ITS OWN FUNCTION + NOT DONE PLEASE REVIEW : REFER TO AppendEntries RPC Receiver
+                // Implementation
+                auto append_entries = std::get<AppendEntries>(response->content_);
+                if (append_entries.term_ < current_term_)
+                    send_message(AppendEntriesResponse(this->current_term_, false), append_entries.leader_id_);
+                else if (log_.size() < append_entries.prev_log_index_
+                         || log_[append_entries.prev_log_index_].term_ != append_entries.prev_log_term_)
+                    send_message(AppendEntriesResponse(this->current_term_, false), append_entries.leader_id_);
+                else
+                {
+                    this->current_term_ = append_entries.term_;
                     this->state_ = state::FOLLOWER;
+                    send_message(AppendEntriesResponse(this->current_term_, true), append_entries.leader_id_);
+                }
             };
         }
         if (count_vote > n_node_ / 2 && this->state_ == state::CANDIDATE)
@@ -141,9 +233,8 @@ void Node::handle_request_vote(const std::shared_ptr<RPCQuery>& response)
     else
     {
         int node_last_term = log_[log_.size() - 1].term_;
-        if (this->state_ == state::LEADER &&
-            (this->voted_for_ == request_vote.candidate_id_ || this->voted_for_ == -1) &&
-            (request_vote.last_log_term_ > node_last_term))
+        if (this->state_ == state::LEADER && (this->voted_for_ == request_vote.candidate_id_ || this->voted_for_ == -1)
+            && (request_vote.last_log_term_ > node_last_term))
             vote_granted = true;
     }
 
