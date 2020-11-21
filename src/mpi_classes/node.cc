@@ -102,19 +102,22 @@ void Node::follower_check(const std::vector<std::optional<RPCQuery>>& queries)
 
 void Node::leader_check(const std::vector<std::optional<RPCQuery>>& queries)
 {
-    // Envoyer heartbeat à tous les serveurs
-    if (this->clock_.check() < election_timeout_/2)
-    {
-        AppendEntries empty_append = AppendEntries("");
-        send_to_all(offset_, n_node_, empty_append, 0);
-        this->clock_.reset();
-    }
-
     for (const auto &query : queries)
     {
         if (!query.has_value())
             continue;
         // this->log_.append(query->content_);
+
+        if (query->type_ == RPC::RPC_TYPE::APPEND_ENTRIES)
+            AppendEntries append_entries = std::get<AppendEntries>(query->content_);
+            for (Entry entry : append_entries.entries)
+                this->log_.push_back(entry);
+                bool replicated_all = False;
+                for (int i = offset_; i < offset_ + n_node_ && !replicated_all; i++)
+                {
+                    if (this->rank_ == i)
+                        continue;
+                }
     }
 }
 
@@ -146,6 +149,16 @@ void Node::convert_to_leader()
 {
     this->state_ = state::LEADER;
     this->clock_.reset();
+    // Envoyer heartbeat à tous les serveurs
+    AppendEntries empty_append = AppendEntries(this->current_term_,
+                                                this->rank_;
+                                                //int prev_log_index,
+                                                0,
+                                                //int prev_log_term,
+                                                0,
+                                                std::vector<Entry>(),
+                                                this->commit_index_);
+    send_to_all(offset_, n_node_, empty_append, 0);
 }
 
 void Node::handle_request_vote(const std::optional<RPCQuery>& query)
