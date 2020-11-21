@@ -16,8 +16,6 @@ public:
 
     json serialize_message() const override;
 
-    // candidate's term
-    const int term_;
     // candidate requesting vote
     const int candidate_id_;
     // index of candidate's last log entry

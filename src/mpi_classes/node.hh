@@ -7,11 +7,11 @@
 #include <vector>
 
 #include "rpc/append-entries.hh"
-#include "rpc/entry.hh"
+#include "rpc/lib-rpc.hh"
 #include "rpc/request-vote-response.hh"
 #include "rpc/request-vote.hh"
 #include "utils/clock.hh"
-#include "rpc/lib-rpc.hh"
+#include "utils/entry.hh"
 
 class Node
 {

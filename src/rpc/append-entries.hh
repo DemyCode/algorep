@@ -5,7 +5,7 @@
 
 #include "json/json.hpp"
 #include "rpc.hh"
-#include "rpc/entry.hh"
+#include "utils/entry.hh"
 
 class AppendEntries : public RPC
 {
@@ -23,8 +23,6 @@ public:
 
     json serialize_message() const override;
 
-    // leader's term
-    const int term_;
     // so follower can redirect clients
     const int leader_id_;
     // index of log entry immediately preceding new ones

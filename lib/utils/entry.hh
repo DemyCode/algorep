@@ -3,9 +3,9 @@
 #include <string>
 
 #include "json/json.hpp"
-#include "rpc.hh"
+#include "rpc/rpc.hh"
 
-class Entry : public RPC
+class Entry
 {
 public:
     using json = nlohmann::json;
@@ -14,7 +14,7 @@ public:
     Entry(const json& serialized_json);
     Entry(const std::string& serialized);
 
-    json serialize_message() const override;
+    json serialize_message() const;
 
     int term_;
     std::string command_;

@@ -1,8 +1,7 @@
 #include "append-entries-response.hh"
 
 AppendEntriesResponse::AppendEntriesResponse(int term, bool success)
-    : RPC(RPC::RPC_TYPE::APPEND_ENTRIES_RESPONSE)
-    , term_(term)
+    : RPC(term, RPC::RPC_TYPE::APPEND_ENTRIES_RESPONSE)
     , success_(success)
 {}
 
@@ -18,7 +17,6 @@ AppendEntriesResponse::json AppendEntriesResponse::serialize_message() const
 {
     json json_object;
 
-    json_object["term"] = this->term_;
     json_object["success"] = this->success_;
 
     return json_object;

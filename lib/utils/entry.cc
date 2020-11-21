@@ -1,9 +1,10 @@
+#include <utility>
+
 #include "entry.hh"
 
 Entry::Entry(int term, std::string command)
-    : RPC(RPC::RPC_TYPE::ENTRY)
-    , term_(term)
-    , command_(command)
+    : term_(term)
+    , command_(std::move(command))
 {}
 
 Entry::Entry(const json& serialized_json)

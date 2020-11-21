@@ -58,11 +58,11 @@ set(MPI_CLASSES_SOURCES
 
 set(RPC_SOURCES
         src/rpc/rpc.cc
-        src/rpc/rpc-response.cc
+        src/rpc/rpc-query.cc
         src/rpc/lib-rpc.cc
         src/rpc/append-entries.cc
         src/rpc/request-vote.cc
-        src/rpc/entry.cc
+        lib/utils/entry.cc
         src/rpc/request-vote-response.cc
         src/rpc/append-entries-response.cc
         src/rpc/request-vote-response.cc)

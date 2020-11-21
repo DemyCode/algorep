@@ -47,9 +47,6 @@ std::shared_ptr<RPCQuery> receive_message(int source, int tag)
             return std::make_shared<RPCQuery>(
                 RPCQuery(message_type, RPCQuery::content_t(AppendEntriesResponse(message_content))));
 
-        case RPC::RPC_TYPE::ENTRY:
-            return std::make_shared<RPCQuery>(RPCQuery(message_type, RPCQuery::content_t(Entry(message_content))));
-
         case RPC::RPC_TYPE::REQUEST_VOTE:
             return std::make_shared<RPCQuery>(
                 RPCQuery(message_type, RPCQuery::content_t(RequestVote(message_content))));

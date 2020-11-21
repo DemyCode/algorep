@@ -114,8 +114,10 @@ void Node::candidate_run()
             }
             else if (response->type_ == RPC::RPC_TYPE::APPEND_ENTRIES_RESPONSE)
             {
-
-            }
+                auto append_entries_response = std::get<AppendEntriesResponse>(response->content_);
+                if (append_entries_response.term_ > this->current_term_)
+                    this->state_ = state::FOLLOWER;
+            };
         }
         if (count_vote > n_node_ / 2 && this->state_ == state::CANDIDATE)
             this->state_ = state::LEADER;

@@ -16,8 +16,6 @@ public:
 
     json serialize_message() const override;
 
-    // current_term, for leader to update itself
-    const int term_;
     // true if follower contained entry matching prev_log_index and prev_log_term
     const bool success_;
 };

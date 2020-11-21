@@ -14,8 +14,6 @@ public:
 
     json serialize_message() const override;
 
-    // current_term, for candidate to update itself
-    const int term_;
     // true means candidate received vote
     const bool vote_granted_;
 };
