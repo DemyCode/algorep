@@ -103,7 +103,20 @@ void Node::follower_check(const std::vector<std::optional<RPCQuery>>& queries)
 
 void Node::leader_check(const std::vector<std::optional<RPCQuery>>& queries)
 {
-    // TODO LEADER RUN
+    // Envoyer heartbeat à tous les serveurs
+    if (this->clock_.check() < election_timeout_/2)
+    {
+        AppendEntries empty_append = AppendEntries("");
+        send_to_all(offset_, n_node_, empty_append, 0);
+        this->clock_.reset();
+    }
+
+    for (const auto &query : queries)
+    {
+        if (!query.has_value())
+            continue;
+        // this->log_.append(query->content_);
+    }
 }
 
 void Node::candidate_check(const std::vector<std::optional<RPCQuery>>& queries)
