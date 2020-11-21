@@ -14,14 +14,14 @@ void send_message(const RPC& rpc_message, int destination, int tag)
     MPI_Request_free(&request);
 }
 
-std::shared_ptr<RPCQuery> receive_message(int source, int tag)
+std::optional<RPCQuery> receive_message(int source, int tag)
 {
     MPI_Status mpi_status;
     int flag;
     MPI_Iprobe(source, tag, MPI_COMM_WORLD, &flag, &mpi_status);
 
     if (!flag)
-        return nullptr;
+        return std::nullopt;
 
     int buffer_size = 0;
 
@@ -35,24 +35,35 @@ std::shared_ptr<RPCQuery> receive_message(int source, int tag)
     auto json_response = nlohmann::json::parse(serialized_response);
 
     auto message_type = json_response["message_type"].get<RPC::RPC_TYPE>();
+    int term = json_response["term"];
     auto message_content = json_response["message_content"];
 
     switch (message_type)
     {
         case RPC::RPC_TYPE::APPEND_ENTRIES:
-            return std::make_shared<RPCQuery>(
-                RPCQuery(message_type, RPCQuery::content_t(AppendEntries(message_content))));
+            return std::make_optional<RPCQuery>(
+                RPCQuery(message_type, term, RPCQuery::content_t(AppendEntries(message_content))));
 
         case RPC::RPC_TYPE::APPEND_ENTRIES_RESPONSE:
-            return std::make_shared<RPCQuery>(
-                RPCQuery(message_type, RPCQuery::content_t(AppendEntriesResponse(message_content))));
+            return std::make_optional<RPCQuery>(
+                RPCQuery(message_type, term, RPCQuery::content_t(AppendEntriesResponse(message_content))));
 
         case RPC::RPC_TYPE::REQUEST_VOTE:
-            return std::make_shared<RPCQuery>(
-                RPCQuery(message_type, RPCQuery::content_t(RequestVote(message_content))));
+            return std::make_optional<RPCQuery>(
+                RPCQuery(message_type, term, RPCQuery::content_t(RequestVote(message_content))));
 
         case RPC::RPC_TYPE::REQUEST_VOTE_RESPONSE:
-            return std::make_shared<RPCQuery>(
-                RPCQuery(message_type, RPCQuery::content_t(RequestVoteResponse(message_content))));
+            return std::make_optional<RPCQuery>(
+                RPCQuery(message_type, term, RPCQuery::content_t(RequestVoteResponse(message_content))));
     }
+}
+
+void receive_all_messages(int offset, int n_node, std::vector<std::optional<RPCQuery>>& queries, int tag)
+{
+    // PROBING IS BASICALLY TRYING TO RECEIVE FROM ALL SERVERS
+    // AND STOCKING EVERY MESSAGE : std::vector<RPC> messages
+    // where messages.size() == n_node_
+
+    for (int source_rank = offset; source_rank < offset + n_node; source_rank++)
+        queries.emplace_back(receive_message(source_rank, tag));
 }

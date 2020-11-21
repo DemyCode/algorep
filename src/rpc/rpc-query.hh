@@ -11,10 +11,11 @@
 class RPCQuery
 {
 public:
-    using content_t = std::variant<AppendEntries, AppendEntriesResponse, Entry, RequestVote, RequestVoteResponse>;
+    using content_t = std::variant<AppendEntries, AppendEntriesResponse, RequestVote, RequestVoteResponse>;
 
-    RPCQuery(RPC::RPC_TYPE type, content_t content);
+    RPCQuery(RPC::RPC_TYPE type, int term, content_t content);
 
     RPC::RPC_TYPE type_;
+    int term_;
     content_t content_;
 };

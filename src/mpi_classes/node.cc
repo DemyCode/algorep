@@ -24,72 +24,36 @@ void Node::run()
     std::cout << "Node " << this->rank_ << " running." << std::endl;
     while (running)
     {
-        std::vector<std::shared_ptr<RPCQuery>> messages = probing();
-        this->allservercheck(messages);
+        std::vector<std::optional<RPCQuery>> queries;
+        receive_all_messages(this->offset_, this->n_node_, queries);
+        this->handle_queries(queries);
+
+        this->all_server_check(queries);
+
         if (this->state_ == state::FOLLOWER)
-            follower_run();
-        if (this->state_ == state::LEADER)
-            leader_run();
-        if (this->state_ == state::CANDIDATE)
-            candidate_run();
+            this->follower_check(queries);
+        else if (this->state_ == state::LEADER)
+            this->leader_check(queries);
+        else if (this->state_ == state::CANDIDATE)
+            this->candidate_check(queries);
+
         // TODO Create end of loop based on REPL state::STOPPED
+        return;
     }
     return;
 }
 
-void Node::allservercheck(std::vector<std::shared_ptr<RPCQuery>> messages)
+void Node::handle_queries(const std::vector<std::optional<RPCQuery>>& queries)
 {
-    // TODO IMPLEMENTATION NEEDS TO BE DONE
-    // THIS SECTION REFER TO THE PART : RULES FOR SERVER -> ALL RULES
-    if (this->commit_index_ > this->last_applied_)
+    for (const auto& query : queries)
     {
-        last_applied_ += 1;
-        // TODO : APPLY LOG LAST APPLY TO STATE MACHINE
-    }
-    for (auto message : messages)
-    {
-        if (message == nullptr)
+        if (query.has_value())
             continue;
 
-        // TODO : COULD BE COMPACTED AS RPC rpc = message->content_
-        // if (rpc.term > current_term_) ...
-
-        if (message->type_ == RPC::RPC_TYPE::APPEND_ENTRIES)
-        {
-            auto append_entries = std::get<AppendEntries>(message->content_);
-            if (append_entries.term_ > current_term_)
-            {
-                this->current_term_ = append_entries.term_;
-                this->state_ = state::FOLLOWER;
-            }
-        }
-        if (message->type_ == RPC::RPC_TYPE::APPEND_ENTRIES_RESPONSE)
-        {
-            auto append_entries = std::get<AppendEntriesResponse>(message->content_);
-            if (append_entries.term_ > current_term_)
-            {
-                this->current_term_ = append_entries.term_;
-                this->state_ = state::FOLLOWER;
-            }
-        }
-        if (message->type_ == RPC::RPC_TYPE::REQUEST_VOTE)
-        {
-            auto append_entries = std::get<RequestVote>(message->content_);
-            if (append_entries.term_ > current_term_)
-            {
-                this->current_term_ = append_entries.term_;
-                this->state_ = state::FOLLOWER;
-            }
-        }
-        if (message->type_ == RPC::RPC_TYPE::REQUEST_VOTE_RESPONSE)
-        {
-            auto append_entries = std::get<RequestVoteResponse>(message->content_);
-            if (append_entries.term_ > current_term_)
-            {
-                this->current_term_ = append_entries.term_;
-                this->state_ = state::FOLLOWER;
-            }
-        }
+        if (query->type_ == RPC::RPC_TYPE::APPEND_ENTRIES)
+            this->handle_append_entries(query);
+        else if (query->type_ == RPC::RPC_TYPE::REQUEST_VOTE)
+            this->handle_request_vote(query);
     }
 }
 
@@ -100,61 +64,32 @@ void Node::convert_to_candidate()
     // THIS FUNCTION ONLY COVERS THE FIRST POINT THE THREE OTHERS ARE HANDLED THROUGH PROBING
 }
 
-std::vector<std::shared_ptr<RPCQuery>> Node::probing()
+void Node::all_server_check(const std::vector<std::optional<RPCQuery>>& queries)
 {
-    // TODO WE NEED TO PROBE MESSAGES AT EVERY LOOP
-    // PROBING IS BASICALLY TRYING TO RECEIVE FROM ALL SERVERS
-    // AND STOCKING EVERY MESSAGE : std::vector<RPC> messages
-    // where messages.size() == n_node_
-    std::vector<std::shared_ptr<RPCQuery>> rpcqueries = std::vector<std::shared_ptr<RPCQuery>>();
-    for (int i = offset_; i < offset_ + n_node_; i++)
-        rpcqueries.push_back(receive_message(i));
-    return rpcqueries;
-}
-
-void Node::follower_run()
-{
-    // THIS FUNCTION BODY IS OUTDATED IT STAYS HERE FOR COMPREHENSION
-    //
-
-    /*
-    while (clock_.check() < election_timeout_)
+    // THIS SECTION REFER TO THE PART : RULES FOR SERVER -> ALL RULES
+    if (this->commit_index_ > this->last_applied_)
     {
-        for (int i = offset_; i < n_node_; i++)
-        {
-            // MPI CHECK ANSWER FROM VOTER
-            if (i == this->rank_)
-                continue;
-            MPI_Status mpiStatus;
-            int flag;
-            MPI_Iprobe(i, 0, MPI_COMM_WORLD, &flag, &mpiStatus);
-            if (!flag)
-                continue;
-            int buffer_size;
-            MPI_Get_count(&mpiStatus, MPI_CHAR, &buffer_size);
-            char* buffer = (char*)malloc(buffer_size * sizeof(char));
-            MPI_Recv(buffer, buffer_size, MPI_CHAR, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            RequestVote requestVote = RequestVote(std::string("bite"));
-            AppendEntries appendEntries = AppendEntries(std::string("bite"));
-            free(buffer);
-
-            // TODO create behavior for RPC TYPE
-        }
-        // RESET TIMER IF RECEIVING APPENDENTRIES WITH EQUAL OR HIGHER TERM
-        if (false something)
-            this->clock_.reset();
+        last_applied_ += 1;
+        // TODO : APPLY LOG LAST APPLY TO STATE MACHINE
     }
-    // IF A CLIENT REQUEST A FOLLOWER REDIRECT IT TO LEADER
 
-    this->state_ = state::CANDIDATE;*/
+    for (const auto& query : queries)
+    {
+
+    }
 }
 
-void Node::leader_run()
+void Node::follower_check(const std::vector<std::optional<RPCQuery>>& queries)
+{
+    // TODO
+}
+
+void Node::leader_check(const std::vector<std::optional<RPCQuery>>& queries)
 {
     // TODO LEADER RUN
 }
 
-void Node::candidate_run()
+void Node::candidate_check(const std::vector<std::optional<RPCQuery>>& queries)
 {
     this->current_term_ += 1;
     this->voted_for_ = this->rank_;
@@ -218,9 +153,10 @@ void Node::candidate_run()
     }
 }
 
-void Node::handle_request_vote(const std::shared_ptr<RPCQuery>& response)
+void Node::handle_request_vote(const std::optional<RPCQuery>& query)
 {
-    auto request_vote = std::get<RequestVote>(response->content_);
+    // FIXME
+    auto request_vote = std::get<RequestVote>(query->content_);
     bool vote_granted = false;
 
     if (request_vote.term_ < this->current_term_)
@@ -241,4 +177,19 @@ void Node::handle_request_vote(const std::shared_ptr<RPCQuery>& response)
 
     RequestVoteResponse request_vote_response(this->current_term_, vote_granted);
     send_message(request_vote_response, request_vote.candidate_id_);
+}
+
+void Node::handle_append_entries(const std::optional<RPCQuery>& query)
+{
+    // TODO
+}
+
+void Node::handle_request_vote_response(const std::optional<RPCQuery>& query)
+{
+    // TODO
+}
+
+void Node::handle_append_entries_response(const std::optional<RPCQuery>& query)
+{
+    // TODO
 }
