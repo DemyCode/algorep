@@ -47,6 +47,7 @@ private:
     void handle_append_entries(const std::optional<RPCQuery>& query);
 
     void convert_to_candidate();
+    void convert_to_leader();
 
     // MPI VALUES
     const int rank_;

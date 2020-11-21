@@ -23,7 +23,8 @@ public:
     std::string serialize() const;
     virtual json serialize_message() const = 0;
 
-private:
     const int term_;
+
+private:
     const RPC_TYPE rpc_type_;
 };
