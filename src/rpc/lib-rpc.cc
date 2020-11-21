@@ -1,5 +1,8 @@
 #include "lib-rpc.hh"
 
+#include "message-response.hh"
+#include "message.hh"
+
 void send_message(const RPC& rpc_message, int destination, MPI_Request& request, int tag)
 {
     const auto& serialized_message = rpc_message.serialize();
@@ -71,6 +74,14 @@ std::optional<RPCQuery> receive_message(int source, int tag)
         case RPC::RPC_TYPE::SEARCH_LEADER_RESPONSE:
             return std::make_optional<RPCQuery>(
                 RPCQuery(message_type, term, RPCQuery::content_t(SearchLeaderResponse(message_content))));
+
+        case RPC::RPC_TYPE::MESSAGE:
+            return std::make_optional<RPCQuery>(
+                RPCQuery(message_type, term, RPCQuery::content_t(Message(message_content))));
+
+        case RPC::RPC_TYPE::MESSAGE_RESPONSE:
+            return std::make_optional<RPCQuery>(
+                RPCQuery(message_type, term, RPCQuery::content_t(MessageResponse(message_content))));
     }
 }
 
