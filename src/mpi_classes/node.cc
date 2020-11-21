@@ -81,7 +81,7 @@ void Node::candidate_run()
     this->clock_.reset();
     int count_vote = 1;
 
-    // When doing communications accross server nodes the range is [offset_ : offset_ + n_node_]
+    // When doing communications across server nodes the range is [offset_ : offset_ + n_node_]
     RequestVote request_vote_query(this->current_term_, this->rank_, log_.size() - 1, log_[log_.size() - 1].term_);
     for (int i = offset_; i < offset_ + n_node_; i++)
     {
@@ -130,6 +130,7 @@ void Node::handle_request_vote(const std::shared_ptr<RPCQuery>& response)
 {
     auto request_vote = std::get<RequestVote>(response->content_);
     bool vote_granted = false;
+
     if (request_vote.term_ < this->current_term_)
         vote_granted = false;
     else if (request_vote.term_ > this->current_term_)
@@ -147,6 +148,6 @@ void Node::handle_request_vote(const std::shared_ptr<RPCQuery>& response)
             vote_granted = true;
     }
 
-    RequestVoteResponse request_vote_response(this->current_term_, false);
+    RequestVoteResponse request_vote_response(this->current_term_, vote_granted);
     send_message(request_vote_response, request_vote.candidate_id_);
 }
