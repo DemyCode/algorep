@@ -67,3 +67,9 @@ void receive_all_messages(int offset, int n_node, std::vector<std::optional<RPCQ
     for (int source_rank = offset; source_rank < offset + n_node; source_rank++)
         queries.emplace_back(receive_message(source_rank, tag));
 }
+
+void send_to_all(int offset, int n_node, const RPC& rpc_message, int tag)
+{
+    for (int source_rank = offset; source_rank < offset + n_node; source_rank++)
+        send_message(rpc_message, source_rank, tag);
+}
