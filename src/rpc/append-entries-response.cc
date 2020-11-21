@@ -5,12 +5,12 @@ AppendEntriesResponse::AppendEntriesResponse(int term, bool success)
     , success_(success)
 {}
 
-AppendEntriesResponse::AppendEntriesResponse(const json& serialized_json)
-    : AppendEntriesResponse(serialized_json["term"], serialized_json["success"])
+AppendEntriesResponse::AppendEntriesResponse(int term, const json& serialized_json)
+    : AppendEntriesResponse(term, serialized_json["success"].get<bool>())
 {}
 
-AppendEntriesResponse::AppendEntriesResponse(const std::string& serialized)
-    : AppendEntriesResponse(json::parse(serialized))
+AppendEntriesResponse::AppendEntriesResponse(int term, const std::string& serialized)
+    : AppendEntriesResponse(term, json::parse(serialized))
 {}
 
 AppendEntriesResponse::json AppendEntriesResponse::serialize_message() const

@@ -18,8 +18,8 @@ public:
                   int prev_log_term,
                   std::vector<Entry> entries,
                   int leader_commit);
-    AppendEntries(const json& serialized_json);
-    AppendEntries(const std::string& serialized);
+    AppendEntries(int term, const json& serialized_json);
+    AppendEntries(int term, const std::string& serialized);
 
     json serialize_message() const override;
 

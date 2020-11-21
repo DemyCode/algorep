@@ -5,12 +5,12 @@ RequestVoteResponse::RequestVoteResponse(int term, bool vote_granted)
     , vote_granted_(vote_granted)
 {}
 
-RequestVoteResponse::RequestVoteResponse(const json& serialized_json)
-    : RequestVoteResponse(serialized_json["term"], serialized_json["vote_granted"])
+RequestVoteResponse::RequestVoteResponse(int term, const json& serialized_json)
+    : RequestVoteResponse(term, serialized_json["vote_granted"].get<bool>())
 {}
 
-RequestVoteResponse::RequestVoteResponse(const std::string& serialized)
-    : RequestVoteResponse(json::parse(serialized))
+RequestVoteResponse::RequestVoteResponse(int term, const std::string& serialized)
+    : RequestVoteResponse(term, json::parse(serialized))
 {}
 
 RequestVoteResponse::json RequestVoteResponse::serialize_message() const
