@@ -102,26 +102,37 @@ void Node::follower_check(const std::vector<std::optional<RPCQuery>>& queries)
 
 void Node::leader_check(const std::vector<std::optional<RPCQuery>>& queries)
 {
+    if (this->clock_.check() < election_timeout_ / 2)
+    {
+        send_message(AppendEntries(this->current_term_, this->rank_, 0, 0, {}, this->commit_index_));
+        clock_.reset();
+    }
     for (const auto& query : queries)
     {
         if (!query.has_value())
             continue;
-        // this->log_.append(query->content_);
 
         if (query->type_ == COMMAND)
         {
             Entry new_entry = Entry(this->current_term_, COMMAND);
             this->log_.push_back(new_entry);
-            for (int i = offset_; i < offset_ + n_node_; i++)
+            // TODO RESPOND AFTER APPLY TO STATE MACHINE
+            // RULES FOR SERVERS -> LEADERS -> 2nd bullet point
+            this->last_applied_;
+            for (size_t i = 0; i < next_index_.size(); i++)
             {
-                if (this->rank_ == i)
+                if ((int)i == this->rank_)
                     continue;
-                send_message(AppendEntries(this->current_term_,
-                                           this->rank_,
-                                           this->log_.size() - 2,
-                                           this->log_[this->log_.size() - 2].term_,
-                                           std::vector<Entry>{new_entry},
-                                           this->commit_index_));
+                if ((int)this->log_.size() - 1 >= next_index_[i])
+                {
+                    AppendEntries append_entries(this->current_term_,
+                                                 this->rank_,
+                                                 next_index_[i],
+                                                 log_[next_index_[i]].term_,
+                                                 this->log_,
+                                                 this->commit_index_);
+                    send_message(append_entries);
+                }
             }
         }
     }
@@ -156,19 +167,30 @@ void Node::convert_to_leader()
     this->state_ = state::LEADER;
     this->clock_.reset();
     // Envoyer heartbeat à tous les serveurs
-    AppendEntries empty_append = AppendEntries(this->current_term_, this->rank_,
-                                               // int prev_log_index,
-                                               0,
-                                               // int prev_log_term,
-                                               0,
-                                               std::vector<Entry>(),
+    AppendEntries empty_append = AppendEntries(this->current_term_,
+                                               this->rank_,
+                                               69,
+                                               42,
+                                               std::vector<Entry>(), // empty entries means heartbeat in response
                                                this->commit_index_);
     send_to_all(offset_, n_node_, empty_append, 0);
+    this->next_index_ = std::vector<int>(n_node_, this->log_.size());
+    this->match_index_ = std::vector<int>(n_node_, 0);
 }
 
 void Node::handle_append_entries(const std::optional<RPCQuery>& query)
 {
     AppendEntries append_entry = std::get<AppendEntries>(query->content_);
+
+    if (append_entry.entries_.empty())
+    {
+        // HEARTBEAT == AppendEntries with empty entries
+        if (append_entry.term_ < this->current_term_)
+            send_message(AppendEntriesResponse(this->current_term_, false), append_entry.leader_id_);
+        else
+            send_message(AppendEntriesResponse(append_entry.term_, true), append_entry.leader_id_);
+        return;
+    }
 
     if (append_entry.term_ < this->current_term_)
     { // 1.
@@ -181,6 +203,7 @@ void Node::handle_append_entries(const std::optional<RPCQuery>& query)
         send_message(AppendEntriesResponse(append_entry.term_, false), append_entry.leader_id_);
         return;
     }
+
     send_message(AppendEntriesResponse(append_entry.term_, true), append_entry.leader_id_);
     std::vector<Entry> new_log = std::vector<Entry>();
     for (int i = 0; i < append_entry.prev_log_index_; i++)
