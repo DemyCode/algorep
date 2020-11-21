@@ -110,27 +110,7 @@ void Node::candidate_run()
             }
             else if (response->type_ == RPC::RPC_TYPE::REQUEST_VOTE)
             {
-                auto request_vote = std::get<RequestVote>(response->content_);
-                bool votegranted = false;
-                if (request_vote.term_ < this->current_term_)
-                    votegranted = false;
-                else if (request_vote.term_ > this->current_term_)
-                {
-                    votegranted = true;
-                    this->state_ = state::FOLLOWER;
-                    this->current_term_ = request_vote.term_;
-                }
-                else
-                {
-                    int node_last_term = log_[log_.size() - 1].term_;
-                    if (this->state_ == state::LEADER &&
-                        (this->voted_for_ == request_vote.candidate_id_ || this->voted_for_ == -1) &&
-                        (request_vote.last_log_term_ > node_last_term))
-                        votegranted = true;
-                }
-
-                RequestVoteResponse request_vote_response(this->current_term_, false);
-                send_message(request_vote_response, request_vote.candidate_id_);
+                this->handle_request_vote(response);
             }
             else if (response->type_ == RPC::RPC_TYPE::APPEND_ENTRIES_RESPONSE)
             {
@@ -142,4 +122,29 @@ void Node::candidate_run()
         if (this->state_ != state::CANDIDATE)
             return;
     }
+}
+
+void Node::handle_request_vote(const std::shared_ptr<RPCQuery>& response)
+{
+    auto request_vote = std::get<RequestVote>(response->content_);
+    bool vote_granted = false;
+    if (request_vote.term_ < this->current_term_)
+        vote_granted = false;
+    else if (request_vote.term_ > this->current_term_)
+    {
+        vote_granted = true;
+        this->state_ = state::FOLLOWER;
+        this->current_term_ = request_vote.term_;
+    }
+    else
+    {
+        int node_last_term = log_[log_.size() - 1].term_;
+        if (this->state_ == state::LEADER &&
+            (this->voted_for_ == request_vote.candidate_id_ || this->voted_for_ == -1) &&
+            (request_vote.last_log_term_ > node_last_term))
+            vote_granted = true;
+    }
+
+    RequestVoteResponse request_vote_response(this->current_term_, false);
+    send_message(request_vote_response, request_vote.candidate_id_);
 }

@@ -32,11 +32,14 @@ public:
 
     Node(int rank, int n_node, int offset, int size);
     void run();
+
+private:
     void follower_run();
     void leader_run();
     void candidate_run();
 
-private:
+    void handle_request_vote(const std::shared_ptr<RPCQuery>& response);
+
     // MPI VALUES
     const int rank_;
     const int n_node_;
