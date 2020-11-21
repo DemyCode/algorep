@@ -45,43 +45,43 @@ std::optional<RPCQuery> receive_message(int source, int tag)
     {
         case RPC::RPC_TYPE::APPEND_ENTRIES:
             return std::make_optional<RPCQuery>(
-                RPCQuery(message_type, term, RPCQuery::content_t(AppendEntries(term, message_content))));
+                RPCQuery(source, message_type, term, RPCQuery::content_t(AppendEntries(term, message_content))));
 
         case RPC::RPC_TYPE::APPEND_ENTRIES_RESPONSE:
-            return std::make_optional<RPCQuery>(
-                RPCQuery(message_type, term, RPCQuery::content_t(AppendEntriesResponse(term, message_content))));
+            return std::make_optional<RPCQuery>(RPCQuery(
+                source, message_type, term, RPCQuery::content_t(AppendEntriesResponse(term, message_content))));
 
         case RPC::RPC_TYPE::REQUEST_VOTE:
             return std::make_optional<RPCQuery>(
-                RPCQuery(message_type, term, RPCQuery::content_t(RequestVote(term, message_content))));
+                RPCQuery(source, message_type, term, RPCQuery::content_t(RequestVote(term, message_content))));
 
         case RPC::RPC_TYPE::REQUEST_VOTE_RESPONSE:
             return std::make_optional<RPCQuery>(
-                RPCQuery(message_type, term, RPCQuery::content_t(RequestVoteResponse(term, message_content))));
+                RPCQuery(source, message_type, term, RPCQuery::content_t(RequestVoteResponse(term, message_content))));
 
         case RPC::RPC_TYPE::NEW_ENTRY:
             return std::make_optional<RPCQuery>(
-                RPCQuery(message_type, term, RPCQuery::content_t(NewEntry(message_content))));
+                RPCQuery(source, message_type, term, RPCQuery::content_t(NewEntry(message_content))));
 
         case RPC::RPC_TYPE::NEW_ENTRY_RESPONSE:
             return std::make_optional<RPCQuery>(
-                RPCQuery(message_type, term, RPCQuery::content_t(NewEntryResponse(message_content))));
+                RPCQuery(source, message_type, term, RPCQuery::content_t(NewEntryResponse(message_content))));
 
         case RPC::RPC_TYPE::SEARCH_LEADER:
             return std::make_optional<RPCQuery>(
-                RPCQuery(message_type, term, RPCQuery::content_t(SearchLeader(message_content))));
+                RPCQuery(source, message_type, term, RPCQuery::content_t(SearchLeader(message_content))));
 
         case RPC::RPC_TYPE::SEARCH_LEADER_RESPONSE:
             return std::make_optional<RPCQuery>(
-                RPCQuery(message_type, term, RPCQuery::content_t(SearchLeaderResponse(message_content))));
+                RPCQuery(source, message_type, term, RPCQuery::content_t(SearchLeaderResponse(message_content))));
 
         case RPC::RPC_TYPE::MESSAGE:
             return std::make_optional<RPCQuery>(
-                RPCQuery(message_type, term, RPCQuery::content_t(Message(message_content))));
+                RPCQuery(source, message_type, term, RPCQuery::content_t(Message(message_content))));
 
         case RPC::RPC_TYPE::MESSAGE_RESPONSE:
             return std::make_optional<RPCQuery>(
-                RPCQuery(message_type, term, RPCQuery::content_t(MessageResponse(message_content))));
+                RPCQuery(source, message_type, term, RPCQuery::content_t(MessageResponse(message_content))));
     }
 }
 
