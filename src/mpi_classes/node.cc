@@ -16,6 +16,7 @@ Node::Node(int rank, int n_node, int offset, int size)
     , last_applied_(0)
     , next_index_() // TODO see initialization
     , match_index_() // TODO see initialization
+    , append_entries_received_(0)
 {}
 
 void Node::run()
@@ -31,11 +32,36 @@ void Node::run()
         this->all_server_check(queries);
 
         if (this->state_ == state::FOLLOWER)
-            this->follower_check(queries);
-        else if (this->state_ == state::LEADER)
-            this->leader_check(queries);
+        {
+            if (this->clock_.check() >= this->election_timeout_)
+            {
+                if (this->append_entries_received_ == 0)
+                {
+                    this->switch_to_candidate();
+                }
+                else
+                {
+                    this->switch_to_follower();
+                }
+            }
+        }
         else if (this->state_ == state::CANDIDATE)
-            this->candidate_check(queries);
+        {
+            if (this->clock_.check() >= this->election_timeout_)
+            {
+                this->switch_to_candidate();
+            }
+            else
+            {
+                // TODO check condition here
+                if (this->vote_received_ >= n_node_ / 2)
+                {
+                    this->switch_to_leader();
+                }
+            }
+        }
+        else if (this->state_ == state::LEADER)
+        {}
 
         // TODO Create end of loop based on REPL state::STOPPED
         return;
@@ -50,18 +76,25 @@ void Node::handle_queries(const std::vector<std::optional<RPCQuery>>& queries)
         if (query.has_value())
             continue;
 
-        if (query->type_ == RPC::RPC_TYPE::APPEND_ENTRIES)
-            this->handle_append_entries(query);
-        else if (query->type_ == RPC::RPC_TYPE::REQUEST_VOTE)
-            this->handle_request_vote(query);
-    }
-}
+        switch (query->type_)
+        {
+            case RPC::RPC_TYPE::APPEND_ENTRIES:
+                this->handle_append_entries(query);
+                break;
 
-void Node::convert_to_candidate()
-{
-    // TODO IMPLEMENTATION NEEDS BE DONE
-    // THIS SECTION REFERS TO : RULES FOR SERVER -> CANDIDATES -> ON CONVERSION TO CANDIDATE, START ELECTION
-    // THIS FUNCTION ONLY COVERS THE FIRST POINT THE THREE OTHERS ARE HANDLED THROUGH PROBING
+            case RPC::RPC_TYPE::REQUEST_VOTE:
+                this->handle_request_vote(query);
+                break;
+
+            case RPC::RPC_TYPE::APPEND_ENTRIES_RESPONSE:
+                this->handle_append_entries_response(query);
+                break;
+
+            case RPC::RPC_TYPE::REQUEST_VOTE_RESPONSE:
+                this->handle_request_vote_response(query);
+                break;
+        }
+    }
 }
 
 void Node::all_server_check(const std::vector<std::optional<RPCQuery>>& queries)
@@ -69,18 +102,27 @@ void Node::all_server_check(const std::vector<std::optional<RPCQuery>>& queries)
     // THIS SECTION REFER TO THE PART : RULES FOR SERVER -> ALL RULES
     if (this->commit_index_ > this->last_applied_)
     {
+        // TODO CHECK 5.3
+
         last_applied_ += 1;
         // TODO : APPLY LOG LAST APPLY TO STATE MACHINE
     }
 
     for (const auto& query : queries)
     {
+        if (query->term_ > this->current_term_)
+        {
+            // TODO CHECK 5.1
 
+            this->current_term_ = query->term_;
+            this->state_ = state::FOLLOWER;
+        }
     }
 }
 
 void Node::follower_check(const std::vector<std::optional<RPCQuery>>& queries)
 {
+    // TODO CHECK 5.2
     // TODO
 }
 
@@ -182,14 +224,58 @@ void Node::handle_request_vote(const std::optional<RPCQuery>& query)
 void Node::handle_append_entries(const std::optional<RPCQuery>& query)
 {
     // TODO
+    if (this->state_ == state::FOLLOWER)
+    {
+        this->append_entries_received_ += 1;
+    }
+    else if (this->state_ == state::CANDIDATE)
+    {
+        this->switch_to_follower();
+    }
 }
 
 void Node::handle_request_vote_response(const std::optional<RPCQuery>& query)
 {
     // TODO
+    auto request_vote_response = std::get<RequestVoteResponse>(query->content_);
+    if (this->state_ == state::CANDIDATE)
+    {
+        if (request_vote_response.vote_granted_)
+            this->vote_received_ += 1;
+    }
 }
 
 void Node::handle_append_entries_response(const std::optional<RPCQuery>& query)
 {
     // TODO
+}
+
+void Node::switch_to_candidate()
+{
+    this->clock_.reset();
+    this->state_ = state::CANDIDATE;
+    this->vote_received_ = 0;
+
+    this->current_term_ += 1;
+    this->voted_for_ = this->rank_;
+
+    RequestVote request_vote_query(this->current_term_, this->rank_, log_.size() - 1, log_[log_.size() - 1].term_);
+    send_to_all(this->offset_, this->n_node_, request_vote_query);
+}
+
+void Node::switch_to_leader()
+{
+    this->clock_.reset();
+    this->state_ = state::LEADER;
+
+    // FIXME
+    AppendEntries append_entries_query(this->current_term_, this->rank_, -1, -1, std::vector<Entry>(), -1);
+    send_to_all(this->offset_, this->n_node_, append_entries_query);
+}
+
+void Node::switch_to_follower()
+{
+    this->clock_.reset();
+    this->state_ = state::FOLLOWER;
+    this->append_entries_received_ = 0;
 }

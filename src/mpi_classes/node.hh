@@ -40,13 +40,14 @@ private:
     void candidate_check(const std::vector<std::optional<RPCQuery>>& queries);
 
     void handle_queries(const std::vector<std::optional<RPCQuery>>& messages);
-    void handle_query(const std::optional<RPCQuery>& query);
     void handle_request_vote_response(const std::optional<RPCQuery>& query);
     void handle_append_entries_response(const std::optional<RPCQuery>& query);
     void handle_request_vote(const std::optional<RPCQuery>& query);
     void handle_append_entries(const std::optional<RPCQuery>& query);
 
-    void convert_to_candidate();
+    void switch_to_candidate();
+    void switch_to_leader();
+    void switch_to_follower();
 
     // MPI VALUES
     const int rank_;
@@ -84,4 +85,9 @@ private:
     // for each server, index of the highest log entry known to be replicated on server (initialized to 0, increase
     // monotonically)
     std::vector<int> match_index_;
+
+    // Follower Information
+    int append_entries_received_;
+    // Candidate Information
+    int vote_received_;
 };
