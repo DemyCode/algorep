@@ -97,7 +97,10 @@ void Client::handle_new_entry_response(const RPCQuery& query)
     const auto& entry = this->entries_.find(new_entry_response.uid_);
 
     if (!new_entry_response.success_)
+    {
         this->entries_to_send_.emplace(entry->second);
+        this->reset_leader();
+    }
 
     this->entries_.erase(new_entry_response.uid_);
     this->entries_clocks_.erase(new_entry_response.uid_);
@@ -143,11 +146,17 @@ void Client::check_timeouts()
             this->entries_to_send_.emplace(entry->second);
 
             if (this->leader_ == leader->second)
-                this->leader_ = -1;
+                this->reset_leader();
 
             this->entries_.erase(uid);
             this->entries_clocks_.erase(uid);
             this->entries_leaders_.erase(uid);
         }
     }
+}
+
+void Client::reset_leader()
+{
+    this->leader_ = -1;
+    this->leader_search_clock_.reset();
 }

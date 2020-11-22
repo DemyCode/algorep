@@ -21,6 +21,7 @@ private:
     void search_leader();
     void send_entries();
     void check_timeouts();
+    void reset_leader();
 
 
     const int rank_;
