@@ -1,15 +1,16 @@
 #include "client.hh"
 
+#include <iostream>
 #include <vector>
 
 #include "rpc/lib-rpc.hh"
 #include "rpc/rpc-query.hh"
 
-Client::Client(/*int rank, int n_client, int client_offset,*/ int n_node, int node_offset, int size)
-    /*: rank_(rank)
-    , n_client_(n_client)
+Client::Client(int rank, /*int n_client, int client_offset,*/ int n_node, int node_offset, int size)
+    : rank_(rank)
+    /*, n_client_(n_client)
     , client_offset_(client_offset)*/
-    : n_node_(n_node)
+    , n_node_(n_node)
     , node_offset_(node_offset)
     , size_(size)
     , timeout_(50)
@@ -33,18 +34,18 @@ void Client::run()
 
         // Handle queries
         std::vector<RPCQuery> queries;
-        receive_all_messages(0, this->size_, queries);
-        this->handle_queries(queries);
+        receive_all_messages(this->rank_, 0, this->size_, queries);
+
+        // Stop if the handle queries function returned true
+        if (this->handle_queries(queries))
+            break;
 
         // Check that all messages are sent
         this->check_timeouts();
-
-        // FIXME remove return
-        return;
     }
 }
 
-void Client::handle_queries(const std::vector<RPCQuery>& queries)
+bool Client::handle_queries(const std::vector<RPCQuery>& queries)
 {
     for (const auto& query : queries)
     {
@@ -61,6 +62,8 @@ void Client::handle_queries(const std::vector<RPCQuery>& queries)
             this->handle_new_entry_response(query);
         }
     }
+
+    return false;
 }
 
 void Client::handle_message(const RPCQuery& query)

@@ -1,5 +1,7 @@
 #include "lib-rpc.hh"
 
+#include <iostream>
+
 #include "message-response.hh"
 #include "message.hh"
 
@@ -85,7 +87,7 @@ std::optional<RPCQuery> receive_message(int source, int tag)
     }
 }
 
-void receive_all_messages(int offset, int n_node, std::vector<RPCQuery>& queries, int tag)
+void receive_all_messages(int rank, int offset, int n_node, std::vector<RPCQuery>& queries, int tag)
 {
     // PROBING IS BASICALLY TRYING TO RECEIVE FROM ALL SERVERS
     // AND STOCKING EVERY MESSAGE : std::vector<RPC> messages
@@ -93,6 +95,9 @@ void receive_all_messages(int offset, int n_node, std::vector<RPCQuery>& queries
 
     for (int source_rank = offset; source_rank < offset + n_node; source_rank++)
     {
+        if (source_rank == rank)
+            continue;
+
         auto query = receive_message(source_rank, tag);
 
         if (query.has_value())

@@ -26,8 +26,8 @@ void Node::run()
     {
         std::vector<RPCQuery> queries;
         // Listen to everything
-        receive_all_messages(0, this->size_, queries);
-        // receive_all_messages(this->offset_, this->n_node_, queries);
+        receive_all_messages(this->rank_, 0, this->size_, queries);
+        // receive_all_messages(this->rank_, this->offset_, this->n_node_, queries);
 
         this->all_server_check(queries);
 
