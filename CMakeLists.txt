@@ -52,7 +52,8 @@ set(LIB_SOURCES
 set(MPI_CLASSES_SOURCES
         src/mpi_classes/client.cc
         src/mpi_classes/controller.cc
-        src/mpi_classes/node.cc)
+        src/mpi_classes/node.cc
+        src/mpi_classes/process-information.cc)
 
 set(RPC_SOURCES
         src/rpc/rpc.cc

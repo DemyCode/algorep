@@ -9,7 +9,7 @@
 class Client
 {
 public:
-    Client(int rank, /*int n_client, int client_offset,*/ int n_node, int node_offset, int size);
+    Client();
 
     void run();
 
@@ -23,13 +23,6 @@ private:
     void check_timeouts();
     void reset_leader();
 
-
-    const int rank_;
-    /*const int n_client_;
-    const int client_offset_;*/
-    const int n_node_;
-    const int node_offset_;
-    const int size_;
     const float timeout_;
 
     Message::SPEED_TYPE speed_;

@@ -5,17 +5,13 @@
 #include <string>
 #include <vector>
 
+#include "mpi_classes/process-information.hh"
 #include "rpc/lib-rpc.hh"
 #include "rpc/message.hh"
 #include "utils/string_utils.hh"
 
-Controller::Controller(int rank, int n_client, int client_offset, int n_node, int node_offset)
-    : rank_(rank)
-    , n_client_(n_client)
-    , client_offset_(client_offset)
-    , n_node_(n_node)
-    , node_offset_(node_offset)
-    , next_uid_(0)
+Controller::Controller()
+    : next_uid_(0)
 {}
 
 void Controller::print_help()
@@ -35,17 +31,21 @@ void Controller::print_help()
 
 void Controller::list_ranks() const
 {
-    int max_size = std::to_string(this->node_offset_ + this->n_node_).size();
+    int max_size = std::to_string(ProcessInformation::instance().size_ - 1).size();
     std::string separator(17 + max_size, '-');
 
     std::cout << std::setfill(' ') << "Ranks:" << std::endl
               << separator << std::endl
-              << "| " << std::setw(max_size) << this->rank_ << " | controller |" << std::endl;
+              << "| " << std::setw(max_size) << ProcessInformation::instance().rank_ << " | controller |" << std::endl;
 
-    for (int client_rank = this->client_offset_; client_rank < this->client_offset_ + this->n_client_; client_rank++)
+    for (int client_rank = ProcessInformation::instance().client_offset_;
+         client_rank < ProcessInformation::instance().client_offset_ + ProcessInformation::instance().n_client_;
+         client_rank++)
         std::cout << "| " << std::setw(max_size) << client_rank << " |   client   |" << std::endl;
 
-    for (int server_rank = this->node_offset_; server_rank < this->node_offset_ + this->n_node_; server_rank++)
+    for (int server_rank = ProcessInformation::instance().node_offset_;
+         server_rank < ProcessInformation::instance().node_offset_ + ProcessInformation::instance().n_node_;
+         server_rank++)
         std::cout << "| " << std::setw(max_size) << server_rank << " |   server   |" << std::endl;
 
     std::cout << separator << std::endl << std::resetiosflags(std::ios::showbase);
@@ -68,7 +68,7 @@ void Controller::handle_entry(const std::vector<std::string>& tokens, const std:
     }
 
     int destination_rank = parse_rank(tokens[1]);
-    if (destination_rank < this->client_offset_ || destination_rank >= this->client_offset_ + this->n_client_)
+    if (!ProcessInformation::instance().is_rank_client(destination_rank))
     {
         std::cout << "Invalid rank: " << tokens[1] << std::endl;
         return;
@@ -92,8 +92,8 @@ void Controller::handle_set_speed(const std::vector<std::string>& tokens)
     }
 
     int destination_rank = parse_rank(tokens[1]);
-    if ((destination_rank < this->node_offset_ || destination_rank >= this->node_offset_ + this->n_node_)
-        && (destination_rank < this->client_offset_ || destination_rank >= this->client_offset_ + this->n_client_))
+    if (!ProcessInformation::instance().is_rank_client(destination_rank)
+        && !ProcessInformation::instance().is_rank_node(destination_rank))
     {
         std::cout << "Invalid rank: " << tokens[1] << std::endl;
         return;
@@ -118,8 +118,8 @@ void Controller::handle_crash(const std::vector<std::string>& tokens)
     }
 
     int destination_rank = parse_rank(tokens[1]);
-    if ((destination_rank < this->node_offset_ || destination_rank >= this->node_offset_ + this->n_node_)
-        && (destination_rank < this->client_offset_ || destination_rank >= this->client_offset_ + this->n_client_))
+    if (!ProcessInformation::instance().is_rank_client(destination_rank)
+        && !ProcessInformation::instance().is_rank_node(destination_rank))
     {
         std::cout << "Invalid rank: " << tokens[1] << std::endl;
         return;
@@ -137,7 +137,7 @@ void Controller::handle_start(const std::vector<std::string>& tokens)
     }
 
     int destination_rank = parse_rank(tokens[1]);
-    if (destination_rank < this->client_offset_ || destination_rank >= this->client_offset_ + this->n_client_)
+    if (!ProcessInformation::instance().is_rank_client(destination_rank))
     {
         std::cout << "Invalid rank: " << tokens[1] << std::endl;
         return;
@@ -155,8 +155,8 @@ void Controller::handle_recover(const std::vector<std::string>& tokens)
     }
 
     int destination_rank = parse_rank(tokens[1]);
-    if ((destination_rank < this->node_offset_ || destination_rank >= this->node_offset_ + this->n_node_)
-        && (destination_rank < this->client_offset_ || destination_rank >= this->client_offset_ + this->n_client_))
+    if (!ProcessInformation::instance().is_rank_client(destination_rank)
+        && !ProcessInformation::instance().is_rank_node(destination_rank))
     {
         std::cout << "Invalid rank: " << tokens[1] << std::endl;
         return;
@@ -174,8 +174,8 @@ void Controller::handle_stop(const std::vector<std::string>& tokens)
     }
 
     int destination_rank = parse_rank(tokens[1]);
-    if ((destination_rank < this->node_offset_ || destination_rank >= this->node_offset_ + this->n_node_)
-        && (destination_rank < this->client_offset_ || destination_rank >= this->client_offset_ + this->n_client_))
+    if (!ProcessInformation::instance().is_rank_client(destination_rank)
+        && !ProcessInformation::instance().is_rank_node(destination_rank))
     {
         std::cout << "Invalid rank: " << tokens[1] << std::endl;
         return;

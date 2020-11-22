@@ -4,6 +4,7 @@
 #include "mpi_classes/client.hh"
 #include "mpi_classes/controller.hh"
 #include "mpi_classes/node.hh"
+#include "mpi_classes/process-information.hh"
 
 int main(int argc, char* argv[])
 {
@@ -23,6 +24,8 @@ int main(int argc, char* argv[])
     int n_client = std::atoi(argv[1]);
     int n_node = std::atoi(argv[2]);
 
+    ProcessInformation::instance().set_information(rank, n_client, 1, n_node, n_client + 1, size);
+
     if (size != n_node + n_client + 1)
     {
         std::cerr << "Usage: mpirun -np size ./raft n_client n_server" << std::endl;
@@ -35,7 +38,7 @@ int main(int argc, char* argv[])
         std::cout << "Start controller rank: " << rank << std::endl;
 
         // CONSOLE
-        Controller controller(rank, n_client, 1, n_node, n_client + 1);
+        Controller controller;
         controller.start_controller();
     }
     else if (rank <= n_client)
@@ -43,7 +46,7 @@ int main(int argc, char* argv[])
         std::cout << "Start client rank: " << rank << std::endl;
 
         // CLIENT
-        Client client(rank, /*n_client, 1,*/ n_node, n_client + 1, size);
+        Client client;
         client.run();
     }
     else

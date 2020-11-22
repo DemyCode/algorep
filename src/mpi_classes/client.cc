@@ -3,17 +3,12 @@
 #include <iostream>
 #include <vector>
 
+#include "mpi_classes/process-information.hh"
 #include "rpc/lib-rpc.hh"
 #include "rpc/rpc-query.hh"
 
-Client::Client(int rank, /*int n_client, int client_offset,*/ int n_node, int node_offset, int size)
-    : rank_(rank)
-    /*, n_client_(n_client)
-    , client_offset_(client_offset)*/
-    , n_node_(n_node)
-    , node_offset_(node_offset)
-    , size_(size)
-    , timeout_(50)
+Client::Client()
+    : timeout_(50)
     , speed_(Message::SPEED_TYPE::HIGH)
     , start_(false)
     , stop_(false)
@@ -43,7 +38,7 @@ void Client::run()
 
         // Handle queries
         std::vector<RPCQuery> queries;
-        receive_all_messages(this->rank_, 0, this->size_, queries);
+        receive_all_messages(ProcessInformation::instance().rank_, 0, ProcessInformation::instance().size_, queries);
         this->handle_queries(queries);
 
         // Check that all messages are sent
@@ -145,7 +140,7 @@ void Client::search_leader()
         this->leader_search_clock_.reset();
 
         SearchLeader search_leader(this->leader_);
-        send_to_all(this->node_offset_, this->n_node_, search_leader);
+        send_to_all(ProcessInformation::instance().node_offset_, ProcessInformation::instance().n_node_, search_leader);
     }
 }
 
