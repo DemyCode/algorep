@@ -123,15 +123,41 @@ void Node::leader_check(const std::vector<RPCQuery>& queries)
                     continue;
                 if ((int)this->log_.size() - 1 >= next_index_[i])
                 {
-                    AppendEntries append_entries(this->current_term_,
-                                                 this->rank_,
-                                                 next_index_[i],
-                                                 log_[next_index_[i]].term_,
-                                                 this->log_,
-                                                 this->commit_index_);
-
-                    // FIXME send to who ?
-                    // send_message(append_entries);
+                    while (true) {
+                        // send AppendEntries RPC with log entries starting at nextIndex
+                        AppendEntries append_entries(this->current_term_,
+                                                    this->rank_,
+                                                    next_index_[i],
+                                                    log_[next_index_[i]].term_,
+                                                    this->log_,
+                                                    this->commit_index_);
+                        send_message(append_entries, i);
+                        // check for answer from follower
+                        while(true)
+                        {
+                            AppendEntriesResponse entry_response; 
+                            std::vector<RPCQuery> queries = receive_message(i);
+                            for (const auto& query : queries)
+                            {
+                                entry_response = std::get<AppendEntriesResponse>(query.content_);
+                                // break as soon as a query is found
+                                if (entry_response)
+                                    break;
+                            }
+                            // full break from while loop
+                            if (entry_response)
+                                break;
+                        }
+                        if (entry_response.success_) {
+                            break;
+                        }
+                        // decrement next_index[i] in order to find matching index
+                        next_index_[i] = next_index_[i] - 1;
+                    }
+                    // update next_index and matched_index for this follower
+                    next_index_[i] = next_index_[i] + 1;
+                    match_index_[i] = match_index_[i] + 1;
+                    // TODO : 4.  if (N > commitIndex && majority of matchIndex[i] ≥ N && log[N].term == currentTerm) : commitIndex = N
                 }
             }
         }
@@ -202,8 +228,8 @@ void Node::handle_append_entries(const RPCQuery& query)
         send_message(AppendEntriesResponse(append_entry.term_, false), append_entry.leader_id_);
         return;
     }
-
     send_message(AppendEntriesResponse(append_entry.term_, true), append_entry.leader_id_);
+    // 3.
     std::vector<Entry> new_log = std::vector<Entry>();
     for (int i = 0; i < append_entry.prev_log_index_; i++)
         new_log.push_back(log_[i]);
@@ -216,9 +242,11 @@ void Node::handle_append_entries(const RPCQuery& query)
             break;
     }
     i -= 1;
+    // 4.
     for (; i < append_entry.entries_.size(); i++)
         new_log.push_back(append_entry.entries_[append_entry.prev_log_index_ + i]);
     log_ = new_log;
+    // 5.
     if (append_entry.leader_commit_ > commit_index_)
         commit_index_ = std::min(append_entry.leader_commit_, (int)append_entry.entries_.size() - 1);
 }
