@@ -184,7 +184,7 @@ void Controller::handle_stop(const std::vector<std::string>& tokens)
     this->send_message(destination_rank, Message::MESSAGE_TYPE::PROCESS_STOP);
 }
 
-void Controller::start_controller()
+void Controller::run()
 {
     std::cout << "> ";
 

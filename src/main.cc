@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 
         // CONSOLE
         Controller controller;
-        controller.start_controller();
+        controller.run();
     }
     else if (rank <= n_client)
     {

@@ -9,7 +9,7 @@ class Controller
 public:
     Controller();
 
-    void start_controller();
+    void run();
 
 private:
     static void print_help();
