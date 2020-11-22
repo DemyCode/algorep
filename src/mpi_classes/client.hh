@@ -9,7 +9,7 @@
 class Client
 {
 public:
-    Client(int rank, int n_client, int client_offset, int n_node, int node_offset, int size);
+    Client(/*int rank, int n_client, int client_offset,*/ int n_node, int node_offset, int size);
 
     void run();
 
@@ -22,9 +22,11 @@ private:
     void send_entries();
     void check_timeouts();
 
+    /*
     const int rank_;
     const int n_client_;
     const int client_offset_;
+    */
     const int n_node_;
     const int node_offset_;
     const int size_;

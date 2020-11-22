@@ -29,12 +29,12 @@ int main(int argc, char* argv[])
     {
         // CONSOLE
         Controller controller = Controller();
-        controller.input();
+        controller.run();
     }
     else if (rank < n_client)
     {
         // CLIENT
-        Client client = Client(rank, n_client, 1, size);
+        Client client = Client(/*rank, n_client, 1,*/ n_node, n_client + 1, size);
         client.run();
     }
     else

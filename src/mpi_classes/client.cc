@@ -5,11 +5,11 @@
 #include "rpc/lib-rpc.hh"
 #include "rpc/rpc-query.hh"
 
-Client::Client(int rank, int n_client, int client_offset, int n_node, int node_offset, int size)
-    : rank_(rank)
+Client::Client(/*int rank, int n_client, int client_offset,*/ int n_node, int node_offset, int size)
+    /*: rank_(rank)
     , n_client_(n_client)
-    , client_offset_(client_offset)
-    , n_node_(n_node)
+    , client_offset_(client_offset)*/
+    : n_node_(n_node)
     , node_offset_(node_offset)
     , size_(size)
     , timeout_(50)
@@ -127,12 +127,12 @@ void Client::check_timeouts()
         if (element.second.check() >= this->timeout_)
         {
             auto uid = element.first;
-            const auto& entry = this->entries_[uid];
-            int leader = this->entries_leaders_[uid];
+            const auto& entry = this->entries_.find(uid);
+            const auto& leader = this->entries_leaders_.find(uid);
 
-            this->entries_to_send_.emplace(entry);
+            this->entries_to_send_.emplace(entry->second);
 
-            if (this->leader_ == leader)
+            if (this->leader_ == leader->second)
                 this->leader_ = -1;
 
             this->entries_.erase(uid);

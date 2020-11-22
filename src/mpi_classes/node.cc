@@ -24,8 +24,10 @@ void Node::run()
     std::cout << "Node " << this->rank_ << " running." << std::endl;
     while (running)
     {
-        std::vector<std::optional<RPCQuery>> queries;
-        receive_all_messages(this->offset_, this->n_node_, queries);
+        std::vector<RPCQuery> queries;
+        // Listen to everything
+        receive_all_messages(0, this->size_, queries);
+        // receive_all_messages(this->offset_, this->n_node_, queries);
 
         this->all_server_check(queries);
 
@@ -63,7 +65,7 @@ void Node::convert_to_candidate()
     }
 }
 
-void Node::all_server_check(const std::vector<std::optional<RPCQuery>>& queries)
+void Node::all_server_check(const std::vector<RPCQuery>& queries)
 {
     // THIS SECTION REFER TO THE PART : RULES FOR SERVER -> ALL RULES
     if (this->commit_index_ > this->last_applied_)
@@ -74,51 +76,47 @@ void Node::all_server_check(const std::vector<std::optional<RPCQuery>>& queries)
 
     for (const auto& query : queries)
     {
-        if (query == std::nullopt)
-            continue;
-        if (query->term_ > current_term_)
+        if (query.term_ > current_term_)
         {
-            current_term_ = query->term_;
+            current_term_ = query.term_;
             state_ = state::FOLLOWER;
         }
     }
 }
 
-void Node::follower_check(const std::vector<std::optional<RPCQuery>>& queries)
+void Node::follower_check(const std::vector<RPCQuery>& queries)
 {
     // TODO
     for (const auto& query : queries)
     {
-        if (!query.has_value())
-            continue;
-        if (query->type_ == RPC::RPC_TYPE::REQUEST_VOTE)
+        if (query.type_ == RPC::RPC_TYPE::REQUEST_VOTE)
             this->handle_request_vote(query);
-        if (query->type_ == RPC::RPC_TYPE::APPEND_ENTRIES)
+        if (query.type_ == RPC::RPC_TYPE::APPEND_ENTRIES)
             this->handle_append_entries(query);
     }
     if (this->clock_.check() > election_timeout_)
         convert_to_candidate();
 }
 
-void Node::leader_check(const std::vector<std::optional<RPCQuery>>& queries)
+void Node::leader_check(const std::vector<RPCQuery>& queries)
 {
     if (this->clock_.check() < election_timeout_ / 2)
     {
-        send_message(AppendEntries(this->current_term_, this->rank_, 0, 0, {}, this->commit_index_));
+        // FIXME send to who ?
+        // send_message(AppendEntries(this->current_term_, this->rank_, 0, 0, {}, this->commit_index_));
         clock_.reset();
     }
     for (const auto& query : queries)
     {
-        if (!query.has_value())
-            continue;
-
-        if (query->type_ == COMMAND)
+        // FIXME COMMAND is probably RPC::RPC_TYPE::NEW_ENTRY
+        if (/*query.type_ == COMMAND*/ query.type_ == RPC::RPC_TYPE::NEW_ENTRY)
         {
-            Entry new_entry = Entry(this->current_term_, COMMAND);
+            // FIXME entry is in new_entry.entry
+            Entry new_entry = Entry(this->current_term_, /*COMMAND*/"");
             this->log_.push_back(new_entry);
             // TODO RESPOND AFTER APPLY TO STATE MACHINE
             // RULES FOR SERVERS -> LEADERS -> 2nd bullet point
-            this->last_applied_;
+            // this->last_applied_;
             for (size_t i = 0; i < next_index_.size(); i++)
             {
                 if ((int)i == this->rank_)
@@ -131,27 +129,28 @@ void Node::leader_check(const std::vector<std::optional<RPCQuery>>& queries)
                                                  log_[next_index_[i]].term_,
                                                  this->log_,
                                                  this->commit_index_);
-                    send_message(append_entries);
+
+                    // FIXME send to who ?
+                    // send_message(append_entries);
                 }
             }
         }
+
     }
 }
 
-void Node::candidate_check(const std::vector<std::optional<RPCQuery>>& queries)
+void Node::candidate_check(const std::vector<RPCQuery>& queries)
 {
     for (const auto& query : queries)
     {
-        if (!query.has_value())
-            continue;
-        if (query->type_ == RPC::RPC_TYPE::REQUEST_VOTE_RESPONSE)
+        if (query.type_ == RPC::RPC_TYPE::REQUEST_VOTE_RESPONSE)
         {
-            RequestVoteResponse request_vote_response = std::get<RequestVoteResponse>(query->content_);
+            RequestVoteResponse request_vote_response = std::get<RequestVoteResponse>(query.content_);
             vote_count_ += request_vote_response.vote_granted_ ? 1 : 0;
         }
-        if (query->type_ == RPC::RPC_TYPE::APPEND_ENTRIES)
+        if (query.type_ == RPC::RPC_TYPE::APPEND_ENTRIES)
         {
-            AppendEntries append_entries = std::get<AppendEntries>(query->content_);
+            AppendEntries append_entries = std::get<AppendEntries>(query.content_);
             if (append_entries.term_ > current_term_)
                 this->state_ = state::FOLLOWER;
         }
@@ -178,9 +177,9 @@ void Node::convert_to_leader()
     this->match_index_ = std::vector<int>(n_node_, 0);
 }
 
-void Node::handle_append_entries(const std::optional<RPCQuery>& query)
+void Node::handle_append_entries(const RPCQuery& query)
 {
-    AppendEntries append_entry = std::get<AppendEntries>(query->content_);
+    AppendEntries append_entry = std::get<AppendEntries>(query.content_);
 
     if (append_entry.entries_.empty())
     {
@@ -224,10 +223,10 @@ void Node::handle_append_entries(const std::optional<RPCQuery>& query)
         commit_index_ = std::min(append_entry.leader_commit_, (int)append_entry.entries_.size() - 1);
 }
 
-void Node::handle_request_vote(const std::optional<RPCQuery>& query)
+void Node::handle_request_vote(const RPCQuery& query)
 {
     // FIXME
-    auto request_vote = std::get<RequestVote>(query->content_);
+    auto request_vote = std::get<RequestVote>(query.content_);
     bool vote_granted = false;
 
     if (request_vote.term_ < this->current_term_)

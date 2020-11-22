@@ -14,7 +14,7 @@ RequestVote::RequestVote(int term, const json& serialized_json)
                   serialized_json["last_log_term"])
 {}
 
-RequestVote::RequestVote(int term, onst std::string& serialized)
+RequestVote::RequestVote(int term, const std::string& serialized)
     : RequestVote(term, json::parse(serialized))
 {}
 

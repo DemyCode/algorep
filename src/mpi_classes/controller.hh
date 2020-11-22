@@ -3,5 +3,5 @@
 class Controller
 {
 public:
-    void input();
+    void run();
 };

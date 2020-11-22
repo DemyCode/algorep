@@ -34,20 +34,17 @@ public:
     void run();
 
 private:
-    void all_server_check(const std::vector<std::optional<RPCQuery>>& queries);
-    void follower_check(const std::vector<std::optional<RPCQuery>>& queries);
-    void leader_check(const std::vector<std::optional<RPCQuery>>& queries);
-    void candidate_check(const std::vector<std::optional<RPCQuery>>& queries);
-
-    void handle_queries(const std::vector<std::optional<RPCQuery>>& messages);
-    void handle_query(const std::optional<RPCQuery>& query);
-    void handle_request_vote_response(const std::optional<RPCQuery>& query);
-    void handle_append_entries_response(const std::optional<RPCQuery>& query);
-    void handle_request_vote(const std::optional<RPCQuery>& query);
-    void handle_append_entries(const std::optional<RPCQuery>& query);
-
     void convert_to_candidate();
+
+    void all_server_check(const std::vector<RPCQuery>& queries);
+    void follower_check(const std::vector<RPCQuery>& queries);
+    void leader_check(const std::vector<RPCQuery>& queries);
+    void candidate_check(const std::vector<RPCQuery>& queries);
+
     void convert_to_leader();
+
+    void handle_append_entries(const RPCQuery& query);
+    void handle_request_vote(const RPCQuery& query);
 
     // MPI VALUES
     const int rank_;
