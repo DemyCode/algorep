@@ -10,10 +10,10 @@ public:
     enum MESSAGE_TYPE
     {
         CLIENT_CREATE_NEW_ENTRY,
-        SERVER_SET_SPEED,
-        SERVER_CRASH,
-        SERVER_START,
-        SERVER_RECOVER
+        CLIENT_START,
+        PROCESS_SET_SPEED,
+        PROCESS_CRASH,
+        PROCESS_RECOVER
     };
 
     Message(int uid, MESSAGE_TYPE message_type, std::string message_content);

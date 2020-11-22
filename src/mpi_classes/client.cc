@@ -80,6 +80,10 @@ void Client::handle_message(const RPCQuery& query)
         MessageResponse message_response(message.uid_, true);
         send_message(message_response, query.source_rank_);
     }
+    // TODO handle CLIENT_START
+    // TODO handle PROCESS_SET_SPEED
+    // TODO handle PROCESS_CRASH
+    // TODO handle PROCESS_RECOVER
 }
 
 void Client::handle_search_leader_response(const RPCQuery& query)

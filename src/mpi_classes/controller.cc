@@ -25,11 +25,11 @@ void Controller::print_help()
         << "- help: print this message" << std::endl
         << "- list_ranks: print the list of ranks with the type of the process associated" << std::endl
         << "- entry [client_rank] [command]: send an entry to the client_rank" << std::endl
-        << "- set_speed [server_rank] [speed]: set the speed of the server_rank, speed available: {low, medium, high}"
+        << "- start [client_rank]: start the client_rank" << std::endl
+        << "- set_speed [process_rank] [speed]: set the speed of the process_rank, speed available: {low, medium, high}"
         << std::endl
-        << "- crash [server_rank]: crash the server_rank" << std::endl
-        << "- start [server_rank]: start the server_rank" << std::endl
-        << "- recover [server_rank]: recover the server_rank" << std::endl;
+        << "- crash [process_rank]: crash the process_rank" << std::endl
+        << "- recover [process_rank]: recover the process_rank" << std::endl;
 }
 
 void Controller::list_ranks() const
@@ -91,7 +91,8 @@ void Controller::handle_set_speed(const std::vector<std::string>& tokens)
     }
 
     int destination_rank = parse_rank(tokens[1]);
-    if (destination_rank < this->node_offset_ || destination_rank >= this->node_offset_ + this->n_node_)
+    if ((destination_rank < this->node_offset_ || destination_rank >= this->node_offset_ + this->n_node_)
+        && (destination_rank < this->client_offset_ || destination_rank >= this->client_offset_ + this->n_client_))
     {
         std::cout << "Invalid rank: " << tokens[1] << std::endl;
         return;
@@ -104,7 +105,7 @@ void Controller::handle_set_speed(const std::vector<std::string>& tokens)
         return;
     }
 
-    this->send_message(destination_rank, Message::MESSAGE_TYPE::SERVER_SET_SPEED, speed);
+    this->send_message(destination_rank, Message::MESSAGE_TYPE::PROCESS_SET_SPEED, speed);
 }
 
 void Controller::handle_crash(const std::vector<std::string>& tokens)
@@ -116,13 +117,14 @@ void Controller::handle_crash(const std::vector<std::string>& tokens)
     }
 
     int destination_rank = parse_rank(tokens[1]);
-    if (destination_rank < this->node_offset_ || destination_rank >= this->node_offset_ + this->n_node_)
+    if ((destination_rank < this->node_offset_ || destination_rank >= this->node_offset_ + this->n_node_)
+        && (destination_rank < this->client_offset_ || destination_rank >= this->client_offset_ + this->n_client_))
     {
         std::cout << "Invalid rank: " << tokens[1] << std::endl;
         return;
     }
 
-    this->send_message(destination_rank, Message::MESSAGE_TYPE::SERVER_CRASH);
+    this->send_message(destination_rank, Message::MESSAGE_TYPE::PROCESS_CRASH);
 }
 
 void Controller::handle_start(const std::vector<std::string>& tokens)
@@ -134,13 +136,13 @@ void Controller::handle_start(const std::vector<std::string>& tokens)
     }
 
     int destination_rank = parse_rank(tokens[1]);
-    if (destination_rank < this->node_offset_ || destination_rank >= this->node_offset_ + this->n_node_)
+    if (destination_rank < this->client_offset_ || destination_rank >= this->client_offset_ + this->n_client_)
     {
         std::cout << "Invalid rank: " << tokens[1] << std::endl;
         return;
     }
 
-    this->send_message(destination_rank, Message::MESSAGE_TYPE::SERVER_START);
+    this->send_message(destination_rank, Message::MESSAGE_TYPE::CLIENT_START);
 }
 
 void Controller::handle_recover(const std::vector<std::string>& tokens)
@@ -152,13 +154,14 @@ void Controller::handle_recover(const std::vector<std::string>& tokens)
     }
 
     int destination_rank = parse_rank(tokens[1]);
-    if (destination_rank < this->node_offset_ || destination_rank >= this->node_offset_ + this->n_node_)
+    if ((destination_rank < this->node_offset_ || destination_rank >= this->node_offset_ + this->n_node_)
+        && (destination_rank < this->client_offset_ || destination_rank >= this->client_offset_ + this->n_client_))
     {
         std::cout << "Invalid rank: " << tokens[1] << std::endl;
         return;
     }
 
-    this->send_message(destination_rank, Message::MESSAGE_TYPE::SERVER_RECOVER);
+    this->send_message(destination_rank, Message::MESSAGE_TYPE::PROCESS_RECOVER);
 }
 
 void Controller::start_controller()
