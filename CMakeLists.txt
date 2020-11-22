@@ -39,12 +39,10 @@ set(JSON_SOURCES
         lib/json/json.hpp)
 
 # Utils
-# Clock
-set(UTILS_CLOCK_SOURCES
-        lib/utils/clock.cc)
-
 set(UTILS_SOURCES
-        ${UTILS_CLOCK_SOURCES})
+        lib/utils/clock.cc
+        lib/utils/entry.cc
+        lib/utils/string-utils.cc)
 
 set(LIB_SOURCES
         ${JSON_SOURCES}
@@ -62,7 +60,6 @@ set(RPC_SOURCES
         src/rpc/lib-rpc.cc
         src/rpc/append-entries.cc
         src/rpc/request-vote.cc
-        lib/utils/entry.cc
         src/rpc/request-vote-response.cc
         src/rpc/append-entries-response.cc
         src/rpc/request-vote-response.cc

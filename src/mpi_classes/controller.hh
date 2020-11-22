@@ -1,7 +1,3 @@
 #pragma once
 
-class Controller
-{
-public:
-    void run();
-};
+void start_controller();

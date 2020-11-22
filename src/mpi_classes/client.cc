@@ -73,6 +73,7 @@ void Client::handle_message(const RPCQuery& query)
 
     if (message.message_type_ == Message::MESSAGE_TYPE::CLIENT_CREATE_NEW_ENTRY)
     {
+        std::cout << "NEW MESSAGE IN QUEUE" << std::endl;
         int entry_uid = this->next_uid_++;
         this->entries_to_send_.emplace(entry_uid, Entry(-1, message.message_content_));
 
