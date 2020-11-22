@@ -14,6 +14,7 @@ Client::Client(int rank, /*int n_client, int client_offset,*/ int n_node, int no
     , node_offset_(node_offset)
     , size_(size)
     , timeout_(50)
+    , speed_(Message::SPEED_TYPE::HIGH)
     , start_(false)
     , leader_(-1)
     , leader_search_clock_()
@@ -28,6 +29,8 @@ void Client::run()
 {
     while (true)
     {
+        Clock::wait(this->speed_);
+
         // If no leader, search for a new one
         if (this->start_)
         {
@@ -93,9 +96,7 @@ void Client::handle_message(const RPCQuery& query)
             break;
 
         case Message::MESSAGE_TYPE::PROCESS_SET_SPEED:
-            // TODO handle PROCESS_SET_SPEED
-            // FIXME remove sucess = false
-            success = false;
+            this->speed_ = Message::parse_speed(message.message_content_);
             break;
 
         case Message::MESSAGE_TYPE::PROCESS_CRASH:

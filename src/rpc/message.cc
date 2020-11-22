@@ -27,3 +27,15 @@ Message::json Message::serialize_message() const
 
     return json_object;
 }
+
+Message::SPEED_TYPE Message::parse_speed(const std::string& speed)
+{
+    if (speed == "low")
+        return SPEED_TYPE::LOW;
+    if (speed == "medium")
+        return SPEED_TYPE::MEDIUM;
+    if (speed == "high")
+        return SPEED_TYPE::HIGH;
+
+    return SPEED_TYPE::HIGH;
+}

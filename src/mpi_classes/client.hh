@@ -32,6 +32,8 @@ private:
     const int size_;
     const float timeout_;
 
+    Message::SPEED_TYPE speed_;
+
     bool start_;
 
     int leader_;
