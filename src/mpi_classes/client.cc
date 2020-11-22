@@ -16,6 +16,7 @@ Client::Client(int rank, /*int n_client, int client_offset,*/ int n_node, int no
     , timeout_(50)
     , speed_(Message::SPEED_TYPE::HIGH)
     , start_(false)
+    , stop_(false)
     , leader_(-1)
     , leader_search_clock_()
     , next_uid_(0)
@@ -27,7 +28,7 @@ Client::Client(int rank, /*int n_client, int client_offset,*/ int n_node, int no
 
 void Client::run()
 {
-    while (true)
+    while (!this->stop_)
     {
         Clock::wait(this->speed_);
 
@@ -43,10 +44,7 @@ void Client::run()
         // Handle queries
         std::vector<RPCQuery> queries;
         receive_all_messages(this->rank_, 0, this->size_, queries);
-
-        // Stop if the handle queries function returned true
-        if (this->handle_queries(queries))
-            break;
+        this->handle_queries(queries);
 
         // Check that all messages are sent
         if (this->start_)
@@ -56,7 +54,7 @@ void Client::run()
     }
 }
 
-bool Client::handle_queries(const std::vector<RPCQuery>& queries)
+void Client::handle_queries(const std::vector<RPCQuery>& queries)
 {
     for (const auto& query : queries)
     {
@@ -73,8 +71,6 @@ bool Client::handle_queries(const std::vector<RPCQuery>& queries)
             this->handle_new_entry_response(query);
         }
     }
-
-    return false;
 }
 
 void Client::handle_message(const RPCQuery& query)
@@ -102,6 +98,10 @@ void Client::handle_message(const RPCQuery& query)
         case Message::MESSAGE_TYPE::PROCESS_CRASH:
             this->start_ = false;
             this->reset_leader();
+            break;
+
+        case Message::MESSAGE_TYPE::PROCESS_STOP:
+            this->stop_ = true;
             break;
 
         default:

@@ -21,6 +21,7 @@ private:
     void handle_crash(const std::vector<std::string>& tokens);
     void handle_start(const std::vector<std::string>& tokens);
     void handle_recover(const std::vector<std::string>& tokens);
+    void handle_stop(const std::vector<std::string>& tokens);
 
     const int rank_;
     const int n_client_;

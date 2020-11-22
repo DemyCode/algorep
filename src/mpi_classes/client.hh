@@ -14,7 +14,7 @@ public:
     void run();
 
 private:
-    bool handle_queries(const std::vector<RPCQuery>& queries);
+    void handle_queries(const std::vector<RPCQuery>& queries);
     void handle_message(const RPCQuery& query);
     void handle_search_leader_response(const RPCQuery& query);
     void handle_new_entry_response(const RPCQuery& query);
@@ -35,6 +35,7 @@ private:
     Message::SPEED_TYPE speed_;
 
     bool start_;
+    bool stop_;
 
     int leader_;
     Clock leader_search_clock_;

@@ -13,7 +13,8 @@ public:
         CLIENT_START,
         PROCESS_SET_SPEED,
         PROCESS_CRASH,
-        PROCESS_RECOVER
+        PROCESS_RECOVER,
+        PROCESS_STOP
     };
 
     enum SPEED_TYPE

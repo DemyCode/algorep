@@ -29,7 +29,8 @@ void Controller::print_help()
         << "- set_speed [process_rank] [speed]: set the speed of the process_rank, speed available: {low, medium, high}"
         << std::endl
         << "- crash [process_rank]: crash the process_rank" << std::endl
-        << "- recover [process_rank]: recover the process_rank" << std::endl;
+        << "- recover [process_rank]: recover the process_rank" << std::endl
+        << "- stop [process_rank]: stop the process_rank" << std::endl;
 }
 
 void Controller::list_ranks() const
@@ -164,6 +165,25 @@ void Controller::handle_recover(const std::vector<std::string>& tokens)
     this->send_message(destination_rank, Message::MESSAGE_TYPE::PROCESS_RECOVER);
 }
 
+void Controller::handle_stop(const std::vector<std::string>& tokens)
+{
+    if (tokens.size() <= 1)
+    {
+        std::cout << "Missing arguments" << std::endl;
+        return;
+    }
+
+    int destination_rank = parse_rank(tokens[1]);
+    if ((destination_rank < this->node_offset_ || destination_rank >= this->node_offset_ + this->n_node_)
+        && (destination_rank < this->client_offset_ || destination_rank >= this->client_offset_ + this->n_client_))
+    {
+        std::cout << "Invalid rank: " << tokens[1] << std::endl;
+        return;
+    }
+
+    this->send_message(destination_rank, Message::MESSAGE_TYPE::PROCESS_STOP);
+}
+
 void Controller::start_controller()
 {
     std::cout << "> ";
@@ -189,6 +209,8 @@ void Controller::start_controller()
                 this->handle_start(tokens);
             else if (tokens[0] == "recover")
                 this->handle_recover(tokens);
+            else if (tokens[0] == "stop")
+                this->handle_stop(tokens);
             else
             {
                 std::cout << "Command not found: " << tokens[0] << std::endl;
