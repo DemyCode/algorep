@@ -32,6 +32,8 @@ private:
     const int size_;
     const float timeout_;
 
+    bool start_;
+
     int leader_;
     Clock leader_search_clock_;
 

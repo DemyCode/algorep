@@ -14,6 +14,7 @@ Client::Client(int rank, /*int n_client, int client_offset,*/ int n_node, int no
     , node_offset_(node_offset)
     , size_(size)
     , timeout_(50)
+    , start_(false)
     , leader_(-1)
     , leader_search_clock_()
     , next_uid_(0)
@@ -28,10 +29,13 @@ void Client::run()
     while (true)
     {
         // If no leader, search for a new one
-        if (this->leader_ == -1)
-            this->search_leader();
-        else
-            this->send_entries();
+        if (this->start_)
+        {
+            if (this->leader_ == -1)
+                this->search_leader();
+            else
+                this->send_entries();
+        }
 
         // Handle queries
         std::vector<RPCQuery> queries;
@@ -42,7 +46,10 @@ void Client::run()
             break;
 
         // Check that all messages are sent
-        this->check_timeouts();
+        if (this->start_)
+        {
+            this->check_timeouts();
+        }
     }
 }
 
@@ -71,19 +78,38 @@ void Client::handle_message(const RPCQuery& query)
 {
     const auto& message = std::get<Message>(query.content_);
 
-    if (message.message_type_ == Message::MESSAGE_TYPE::CLIENT_CREATE_NEW_ENTRY)
-    {
-        std::cout << "NEW MESSAGE IN QUEUE" << std::endl;
-        int entry_uid = this->next_uid_++;
-        this->entries_to_send_.emplace(entry_uid, Entry(-1, message.message_content_));
+    bool success = true;
 
-        MessageResponse message_response(message.uid_, true);
-        send_message(message_response, query.source_rank_);
+    switch (message.message_type_)
+    {
+        case Message::MESSAGE_TYPE::CLIENT_CREATE_NEW_ENTRY:
+            this->entries_to_send_.emplace(this->next_uid_++, Entry(-1, message.message_content_));
+            break;
+
+        case Message::MESSAGE_TYPE::CLIENT_START:
+        case Message::MESSAGE_TYPE::PROCESS_RECOVER:
+            this->start_ = true;
+            this->reset_leader();
+            break;
+
+        case Message::MESSAGE_TYPE::PROCESS_SET_SPEED:
+            // TODO handle PROCESS_SET_SPEED
+            // FIXME remove sucess = false
+            success = false;
+            break;
+
+        case Message::MESSAGE_TYPE::PROCESS_CRASH:
+            this->start_ = false;
+            this->reset_leader();
+            break;
+
+        default:
+            success = false;
+            break;
     }
-    // TODO handle CLIENT_START
-    // TODO handle PROCESS_SET_SPEED
-    // TODO handle PROCESS_CRASH
-    // TODO handle PROCESS_RECOVER
+
+    MessageResponse message_response(message.uid_, success);
+    send_message(message_response, query.source_rank_);
 }
 
 void Client::handle_search_leader_response(const RPCQuery& query)
