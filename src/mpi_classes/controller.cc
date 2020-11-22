@@ -9,13 +9,12 @@
 #include "rpc/message.hh"
 #include "utils/string_utils.hh"
 
-Controller::Controller(int rank, int n_client, int client_offset, int n_node, int node_offset, int size)
+Controller::Controller(int rank, int n_client, int client_offset, int n_node, int node_offset)
     : rank_(rank)
     , n_client_(n_client)
     , client_offset_(client_offset)
     , n_node_(n_node)
     , node_offset_(node_offset)
-    , size_(size)
     , next_uid_(0)
 {}
 
@@ -51,28 +50,24 @@ void Controller::list_ranks() const
     std::cout << separator << std::endl << std::resetiosflags(std::ios::showbase);
 }
 
-void Controller::send_entry(int destination_rank, const std::string& command)
+void Controller::send_message(int destination_rank,
+                              const Message::MESSAGE_TYPE& message_type,
+                              const std::string& command)
 {
-    Message message(this->next_uid_++, Message::MESSAGE_TYPE::CLIENT_CREATE_NEW_ENTRY, command);
-    send_message(message, destination_rank);
+    Message message(this->next_uid_++, message_type, command);
+    ::send_message(message, destination_rank);
 }
 
 void Controller::handle_entry(const std::vector<std::string>& tokens, const std::string& line)
 {
     if (tokens.size() <= 2)
     {
-        std::cout << "Missing arguments" << std::endl;
+        std::cout << "Invalid arguments" << std::endl;
         return;
     }
 
-    int destination_rank = -1;
-    try
-    {
-        destination_rank = std::stoi(tokens[1]);
-    } catch (const std::invalid_argument& exception)
-    {}
-
-    if (destination_rank >= size_ || destination_rank < 0)
+    int destination_rank = parse_rank(tokens[1]);
+    if (destination_rank < this->client_offset_ || destination_rank >= this->client_offset_ + this->n_client_)
     {
         std::cout << "Invalid rank: " << tokens[1] << std::endl;
         return;
@@ -80,33 +75,90 @@ void Controller::handle_entry(const std::vector<std::string>& tokens, const std:
 
     std::vector<std::string> sub_tokens;
     auto position = split_string(line, " ", sub_tokens, 2);
-    std::cout << "position: " << position << " -> " << line[position] << std::endl;
     position = line.find_first_not_of(' ', position);
-    std::cout << "position: " << position << " -> " << line[position] << std::endl;
 
     std::string command = line.substr(position, line.size() - position);
 
-    this->send_entry(destination_rank, command);
+    this->send_message(destination_rank, Message::MESSAGE_TYPE::CLIENT_CREATE_NEW_ENTRY, command);
 }
 
 void Controller::handle_set_speed(const std::vector<std::string>& tokens)
 {
-    // TODO
+    if (tokens.size() != 3)
+    {
+        std::cout << "Invalid arguments" << std::endl;
+        return;
+    }
+
+    int destination_rank = parse_rank(tokens[1]);
+    if (destination_rank < this->node_offset_ || destination_rank >= this->node_offset_ + this->n_node_)
+    {
+        std::cout << "Invalid rank: " << tokens[1] << std::endl;
+        return;
+    }
+
+    const auto& speed = tokens[2];
+    if (speed != "low" && speed != "medium" && speed != "high")
+    {
+        std::cout << "Invalid speed: " << tokens[2] << std::endl;
+        return;
+    }
+
+    this->send_message(destination_rank, Message::MESSAGE_TYPE::SERVER_SET_SPEED, speed);
 }
 
 void Controller::handle_crash(const std::vector<std::string>& tokens)
 {
-    // TODO
+    if (tokens.size() <= 1)
+    {
+        std::cout << "Missing arguments" << std::endl;
+        return;
+    }
+
+    int destination_rank = parse_rank(tokens[1]);
+    if (destination_rank < this->node_offset_ || destination_rank >= this->node_offset_ + this->n_node_)
+    {
+        std::cout << "Invalid rank: " << tokens[1] << std::endl;
+        return;
+    }
+
+    this->send_message(destination_rank, Message::MESSAGE_TYPE::SERVER_CRASH);
 }
 
 void Controller::handle_start(const std::vector<std::string>& tokens)
 {
-    // TODO
+    if (tokens.size() <= 1)
+    {
+        std::cout << "Missing arguments" << std::endl;
+        return;
+    }
+
+    int destination_rank = parse_rank(tokens[1]);
+    if (destination_rank < this->node_offset_ || destination_rank >= this->node_offset_ + this->n_node_)
+    {
+        std::cout << "Invalid rank: " << tokens[1] << std::endl;
+        return;
+    }
+
+    this->send_message(destination_rank, Message::MESSAGE_TYPE::SERVER_START);
 }
 
 void Controller::handle_recover(const std::vector<std::string>& tokens)
 {
-    // TODO
+    if (tokens.size() <= 1)
+    {
+        std::cout << "Missing arguments" << std::endl;
+        return;
+    }
+
+    int destination_rank = parse_rank(tokens[1]);
+    if (destination_rank < this->node_offset_ || destination_rank >= this->node_offset_ + this->n_node_)
+    {
+        std::cout << "Invalid rank: " << tokens[1] << std::endl;
+        return;
+    }
+
+    this->send_message(destination_rank, Message::MESSAGE_TYPE::SERVER_RECOVER);
 }
 
 void Controller::start_controller()

@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
         std::cout << "Start controller rank: " << rank << std::endl;
 
         // CONSOLE
-        Controller controller(rank, n_client, 1, n_node, n_client + 1, size);
+        Controller controller(rank, n_client, 1, n_node, n_client + 1);
         controller.start_controller();
     }
     else if (rank <= n_client)

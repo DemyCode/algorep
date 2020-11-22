@@ -25,3 +25,16 @@ split_string(const std::string& str, const std::string& delimiter, std::vector<s
 
     return position;
 }
+
+int parse_rank(const std::string& str_rank)
+{
+    int rank = -1;
+
+    try
+    {
+        rank = std::stoi(str_rank);
+    } catch (const std::invalid_argument& exception)
+    {}
+
+    return rank;
+}
