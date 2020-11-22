@@ -35,14 +35,15 @@ int main(int argc, char* argv[])
         std::cout << "Start controller rank: " << rank << std::endl;
 
         // CONSOLE
-        start_controller();
+        Controller controller(rank, n_client, 1, n_node, n_client + 1);
+        controller.start_controller();
     }
     else if (rank <= n_client)
     {
         std::cout << "Start client rank: " << rank << std::endl;
 
         // CLIENT
-        Client client = Client(rank, /*n_client, 1,*/ n_node, n_client + 1, size);
+        Client client(rank, /*n_client, 1,*/ n_node, n_client + 1, size);
         client.run();
     }
     else
@@ -51,7 +52,7 @@ int main(int argc, char* argv[])
 
         // SERVER
         int offset = n_client + 1;
-        Node node = Node(rank, n_node, offset, size);
+        Node node(rank, n_node, offset, size);
         node.run();
     }
 
