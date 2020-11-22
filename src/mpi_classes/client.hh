@@ -18,7 +18,7 @@ private:
     void handle_message(const RPCQuery& query);
     void handle_search_leader_response(const RPCQuery& query);
     void handle_new_entry_response(const RPCQuery& query);
-    void search_leader() const;
+    void search_leader();
     void send_entries();
     void check_timeouts();
 
@@ -32,6 +32,7 @@ private:
     const float timeout_;
 
     int leader_;
+    Clock leader_search_clock_;
 
     int next_uid_;
 

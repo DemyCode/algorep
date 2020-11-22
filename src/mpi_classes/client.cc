@@ -15,6 +15,7 @@ Client::Client(int rank, /*int n_client, int client_offset,*/ int n_node, int no
     , size_(size)
     , timeout_(50)
     , leader_(-1)
+    , leader_search_clock_()
     , next_uid_(0)
     , entries_to_send_()
     , entries_()
@@ -102,10 +103,15 @@ void Client::handle_new_entry_response(const RPCQuery& query)
     this->entries_leaders_.erase(new_entry_response.uid_);
 }
 
-void Client::search_leader() const
+void Client::search_leader()
 {
-    SearchLeader search_leader(this->leader_);
-    send_to_all(this->node_offset_, this->n_node_, search_leader);
+    if (this->leader_search_clock_.check() >= this->timeout_)
+    {
+        this->leader_search_clock_.reset();
+
+        SearchLeader search_leader(this->leader_);
+        send_to_all(this->node_offset_, this->n_node_, search_leader);
+    }
 }
 
 void Client::send_entries()
