@@ -46,6 +46,7 @@ void Client::run()
         if (this->entries_to_send_.empty() && this->auto_stop_)
         {
             stop_nodes();
+            this->start_ = false;
             this->stop_ = true;
         }
 
@@ -113,6 +114,7 @@ void Client::handle_message(const RPCQuery& query)
             break;
 
         case Message::MESSAGE_TYPE::PROCESS_STOP:
+            this->start_ = false;
             this->stop_ = true;
             break;
 
@@ -158,6 +160,9 @@ void Client::search_leader()
 
 void Client::send_next_entry()
 {
+    if (this->entries_to_send_.empty())
+        return;
+
     const auto& entry = this->entries_to_send_.front();
     send_message(entry, this->leader_);
 
@@ -167,6 +172,9 @@ void Client::send_next_entry()
 
 void Client::check_timeout()
 {
+    if (this->entries_to_send_.empty())
+        return;
+
     if (this->entry_clock_.check() >= this->timeout_)
     {
         this->entry_sent_ = true;
@@ -176,6 +184,9 @@ void Client::check_timeout()
 
 void Client::reset_leader()
 {
+    if (this->leader_ == -1)
+        return;
+    
     this->leader_ = -1;
     this->leader_search_clock_.reset();
 }
