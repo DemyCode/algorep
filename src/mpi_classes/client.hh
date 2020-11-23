@@ -20,8 +20,8 @@ private:
     void handle_search_leader_response(const RPCQuery& query);
     void handle_new_entry_response(const RPCQuery& query);
     void search_leader();
-    void send_entries();
-    void check_timeouts();
+    void send_next_entry();
+    void check_timeout();
     void reset_leader();
 
     const float timeout_;
@@ -34,10 +34,8 @@ private:
     int leader_;
     Clock leader_search_clock_;
 
-    int next_uid_;
-
     std::queue<NewEntry> entries_to_send_;
-    std::unordered_map<int, NewEntry> entries_;
-    std::unordered_map<int, Clock> entries_clocks_;
-    std::unordered_map<int, int> entries_leaders_;
+
+    bool entry_sent_;
+    Clock entry_clock_;
 };

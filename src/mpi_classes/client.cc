@@ -1,10 +1,10 @@
 #include "client.hh"
 
-#include <iostream>
-#include <vector>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "mpi_classes/process-information.hh"
 #include "rpc/lib-rpc.hh"
@@ -17,11 +17,9 @@ Client::Client()
     , stop_(false)
     , leader_(-1)
     , leader_search_clock_()
-    , next_uid_(0)
     , entries_to_send_()
-    , entries_()
-    , entries_clocks_()
-    , entries_leaders_()
+    , entry_sent_(true)
+    , entry_clock_()
 {}
 
 void Client::add_command_list(const std::string& command_list_path)
@@ -29,7 +27,7 @@ void Client::add_command_list(const std::string& command_list_path)
     std::ifstream file(command_list_path);
 
     for (std::string line; std::getline(file, line);)
-        this->entries_to_send_.emplace(this->next_uid_++, Entry(-1, line));
+        this->entries_to_send_.emplace(Entry(-1, line));
 }
 
 void Client::run()
@@ -43,8 +41,8 @@ void Client::run()
         {
             if (this->leader_ == -1)
                 this->search_leader();
-            else
-                this->send_entries();
+            else if (this->entry_sent_)
+                this->send_next_entry();
         }
 
         // Handle queries
@@ -54,7 +52,7 @@ void Client::run()
 
         // Check that all messages are sent
         if (this->start_)
-            this->check_timeouts();
+            this->check_timeout();
     }
 }
 
@@ -80,7 +78,7 @@ void Client::handle_message(const RPCQuery& query)
     switch (message.message_type_)
     {
         case Message::MESSAGE_TYPE::CLIENT_CREATE_NEW_ENTRY:
-            this->entries_to_send_.emplace(this->next_uid_++, Entry(-1, message.message_content_));
+            this->entries_to_send_.emplace(Entry(-1, message.message_content_));
             break;
 
         case Message::MESSAGE_TYPE::CLIENT_START:
@@ -123,17 +121,12 @@ void Client::handle_new_entry_response(const RPCQuery& query)
 {
     const auto& new_entry_response = std::get<NewEntryResponse>(query.content_);
 
-    const auto& entry = this->entries_.find(new_entry_response.uid_);
-
-    if (!new_entry_response.success_)
-    {
-        this->entries_to_send_.emplace(entry->second);
+    if (new_entry_response.success_)
+        this->entries_to_send_.pop();
+    else
         this->reset_leader();
-    }
 
-    this->entries_.erase(new_entry_response.uid_);
-    this->entries_clocks_.erase(new_entry_response.uid_);
-    this->entries_leaders_.erase(new_entry_response.uid_);
+    this->entry_sent_ = true;
 }
 
 void Client::search_leader()
@@ -147,40 +140,21 @@ void Client::search_leader()
     }
 }
 
-void Client::send_entries()
+void Client::send_next_entry()
 {
-    while (!this->entries_to_send_.empty())
-    {
-        const auto& entry = this->entries_to_send_.front();
+    const auto& entry = this->entries_to_send_.front();
+    send_message(entry, this->leader_);
 
-        send_message(entry, this->leader_);
-
-        this->entries_to_send_.pop();
-        this->entries_.emplace(entry.uid_, entry);
-        this->entries_clocks_.emplace(entry.uid_, Clock());
-        this->entries_leaders_.emplace(entry.uid_, this->leader_);
-    }
+    this->entry_sent_ = false;
+    this->entry_clock_.reset();
 }
 
-void Client::check_timeouts()
+void Client::check_timeout()
 {
-    for (const auto& element : this->entries_clocks_)
+    if (this->entry_clock_.check() >= this->timeout_)
     {
-        if (element.second.check() >= this->timeout_)
-        {
-            auto uid = element.first;
-            const auto& entry = this->entries_.find(uid);
-            const auto& leader = this->entries_leaders_.find(uid);
-
-            this->entries_to_send_.emplace(entry->second);
-
-            if (this->leader_ == leader->second)
-                this->reset_leader();
-
-            this->entries_.erase(uid);
-            this->entries_clocks_.erase(uid);
-            this->entries_leaders_.erase(uid);
-        }
+        this->entry_sent_ = true;
+        this->reset_leader();
     }
 }
 
