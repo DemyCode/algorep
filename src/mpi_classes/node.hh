@@ -1,5 +1,6 @@
 #pragma once
 
+#include <fstream>
 #include <iostream>
 #include <mpi.h>
 #include <optional>
@@ -31,6 +32,7 @@ public:
     };
 
     Node(int rank, int n_node, int offset, int size);
+    ~Node();
     void run();
 
 private:
@@ -56,6 +58,8 @@ private:
     float election_timeout_;
     Clock clock_;
     int vote_count_;
+
+    std::ofstream ofstream_;
 
     // RAFT VALUES
     // Persistent on all servers (updated on stable storage before responding to RPCs)

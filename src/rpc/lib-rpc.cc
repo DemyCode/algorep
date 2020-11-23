@@ -123,8 +123,9 @@ std::optional<RPCQuery> wait_message(int source, float timeout, int tag)
     return std::nullopt;
 }
 
-void send_to_all(int offset, int n_node, const RPC& rpc_message, int tag)
+void send_to_all(int rank, int offset, int n_node, const RPC& rpc_message, int tag)
 {
     for (int source_rank = offset; source_rank < offset + n_node; source_rank++)
-        send_message(rpc_message, source_rank, tag);
+        if (rank != source_rank)
+            send_message(rpc_message, source_rank, tag);
 }
