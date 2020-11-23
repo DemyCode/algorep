@@ -67,7 +67,7 @@ void Controller::handle_entry(const std::vector<std::string>& tokens, const std:
         return;
     }
 
-    int destination_rank = parse_rank(tokens[1]);
+    int destination_rank = parse_int(tokens[1]);
     if (!ProcessInformation::instance().is_rank_client(destination_rank))
     {
         std::cout << "Invalid rank: " << tokens[1] << std::endl;
@@ -91,7 +91,7 @@ void Controller::handle_set_speed(const std::vector<std::string>& tokens)
         return;
     }
 
-    int destination_rank = parse_rank(tokens[1]);
+    int destination_rank = parse_int(tokens[1]);
     if (!ProcessInformation::instance().is_rank_client(destination_rank)
         && !ProcessInformation::instance().is_rank_node(destination_rank))
     {
@@ -117,7 +117,7 @@ void Controller::handle_crash(const std::vector<std::string>& tokens)
         return;
     }
 
-    int destination_rank = parse_rank(tokens[1]);
+    int destination_rank = parse_int(tokens[1]);
     if (!ProcessInformation::instance().is_rank_client(destination_rank)
         && !ProcessInformation::instance().is_rank_node(destination_rank))
     {
@@ -136,7 +136,7 @@ void Controller::handle_start(const std::vector<std::string>& tokens)
         return;
     }
 
-    int destination_rank = parse_rank(tokens[1]);
+    int destination_rank = parse_int(tokens[1]);
     if (!ProcessInformation::instance().is_rank_client(destination_rank))
     {
         std::cout << "Invalid rank: " << tokens[1] << std::endl;
@@ -154,7 +154,7 @@ void Controller::handle_recover(const std::vector<std::string>& tokens)
         return;
     }
 
-    int destination_rank = parse_rank(tokens[1]);
+    int destination_rank = parse_int(tokens[1]);
     if (!ProcessInformation::instance().is_rank_client(destination_rank)
         && !ProcessInformation::instance().is_rank_node(destination_rank))
     {
@@ -173,7 +173,7 @@ void Controller::handle_stop(const std::vector<std::string>& tokens)
         return;
     }
 
-    int destination_rank = parse_rank(tokens[1]);
+    int destination_rank = parse_int(tokens[1]);
     if (!ProcessInformation::instance().is_rank_client(destination_rank)
         && !ProcessInformation::instance().is_rank_node(destination_rank))
     {

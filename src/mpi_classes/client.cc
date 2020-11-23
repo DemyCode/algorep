@@ -2,6 +2,9 @@
 
 #include <iostream>
 #include <vector>
+#include <fstream>
+#include <sstream>
+#include <string>
 
 #include "mpi_classes/process-information.hh"
 #include "rpc/lib-rpc.hh"
@@ -20,6 +23,14 @@ Client::Client()
     , entries_clocks_()
     , entries_leaders_()
 {}
+
+void Client::add_command_list(const std::string& command_list_path)
+{
+    std::ifstream file(command_list_path);
+
+    for (std::string line; std::getline(file, line);)
+        this->entries_to_send_.emplace(this->next_uid_++, Entry(-1, line));
+}
 
 void Client::run()
 {
@@ -43,9 +54,7 @@ void Client::run()
 
         // Check that all messages are sent
         if (this->start_)
-        {
             this->check_timeouts();
-        }
     }
 }
 
@@ -54,17 +63,11 @@ void Client::handle_queries(const std::vector<RPCQuery>& queries)
     for (const auto& query : queries)
     {
         if (query.type_ == RPC::RPC_TYPE::MESSAGE)
-        {
             this->handle_message(query);
-        }
         else if (query.type_ == RPC::RPC_TYPE::SEARCH_LEADER_RESPONSE)
-        {
             this->handle_search_leader_response(query);
-        }
         else if (query.type_ == RPC::RPC_TYPE::NEW_ENTRY_RESPONSE)
-        {
             this->handle_new_entry_response(query);
-        }
     }
 }
 

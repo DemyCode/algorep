@@ -12,6 +12,7 @@ public:
     Client();
 
     void run();
+    void add_command_list(const std::string& command_list_path);
 
 private:
     void handle_queries(const std::vector<RPCQuery>& queries);
