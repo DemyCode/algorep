@@ -79,7 +79,8 @@ void Node::all_server_check(const std::vector<RPCQuery>& queries)
             log_file.close();
         }
         else
-            std::cerr << "Unable to open file : " << "log" + std::to_string(rank_) + ".txt" << std::endl;
+            std::cerr << "Unable to open file : "
+                      << "log" + std::to_string(rank_) + ".txt" << std::endl;
     }
 
     for (const auto& query : queries)
