@@ -146,7 +146,7 @@ void Node::leader_check(const std::vector<RPCQuery>& queries)
                                                      this->rank_,
                                                      next_index_[i],
                                                      log_[next_index_[i]].term_,
-                                                     this->log_,
+                                                     res_entry,
                                                      this->commit_index_);
                         send_message(append_entries, i + offset_);
                         std::optional<RPCQuery> append_entries_response = wait_message(i + offset_, 50);
@@ -220,12 +220,27 @@ void Node::convert_to_leader()
 void Node::handle_append_entries(const RPCQuery& query)
 {
     AppendEntries append_entries = std::get<AppendEntries>(query.content_);
-    if (append_entries.term_ < current_term_)
+    // 1 & 2
+    if (append_entries.term_ < current_term_ ||
+        this->log_[append_entries.prev_log_index_ - 1].term_ != append_entries.prev_log_term_ ||
+        this->log_[append_entries.prev_log_index_].term_ != append_entries.prev_log_term_)
     {
         auto append_entries_response = AppendEntriesResponse(current_term_, false);
         send_message(append_entries_response, append_entries.leader_id_);
     }
-    if ()
+    std::vector<Entry> new_log = std::vector<Entry>();
+    size_t i = 0;
+    for (; i < append_entry.prev_log_index_; i++)
+        new_log.push_back(log_[i]);
+
+    ;
+    // 3 & 4.
+    for (; i < append_entry.entries_.size(); i++)
+        new_log.push_back(append_entry.entries_[append_entry.prev_log_index_ + i]);
+    log_ = new_log;
+    // 5.
+    if (append_entry.leader_commit_ > commit_index_)
+        commit_index_ = std::min(append_entry.leader_commit_, append_entry.entries_.size() - 1);
 }
 
 void Node::handle_request_vote(const RPCQuery& query)
