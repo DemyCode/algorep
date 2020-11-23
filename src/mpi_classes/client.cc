@@ -58,8 +58,9 @@ void Client::run()
         else if (this->entry_sent_)
             this->send_next_entry();
 
-        // Check that all messages are sent
-        this->check_timeout();
+        // Check that the message is sent
+        if (!this->entry_sent_)
+            this->check_timeout();
     }
 }
 
@@ -105,6 +106,10 @@ void Client::handle_message(const RPCQuery& query)
         case Message::MESSAGE_TYPE::PROCESS_CRASH:
             this->start_ = false;
             this->reset_leader();
+
+            while (!this->entries_to_send_.empty())
+                this->entries_to_send_.pop();
+            this->entry_sent_ = true;
             break;
 
         case Message::MESSAGE_TYPE::PROCESS_STOP:
