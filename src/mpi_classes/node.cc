@@ -157,8 +157,14 @@ void Node::leader_check(const std::vector<RPCQuery>& queries)
                     // update next_index and matched_index for this follower
                     next_index_[i] = next_index_[i] + 1;
                     match_index_[i] = match_index_[i] + 1;
-                    // TODO : 4.  if (N > commitIndex && majority of matchIndex[i] ≥ N && log[N].term == currentTerm) : commitIndex = N
                 }
+                // 4.  if (N > commitIndex && majority of matchIndex[i] ≥ N && log[N].term == currentTerm) : commitIndex = N
+                int updated_logs_count = 0;
+                for (int j = 0; j < next_index_.size; j++)
+                    if (match_index_[j] == commit_index_ + 1)
+                        updated_logs_count++;
+                if (this->log_.size - 1 > commit_index_ && updated_logs_count > n_node_/2 && this->log_[this->log_.size - 1].term == currentTerm)
+                    commit_index_ = this->log_.size - 1;
             }
         }
 
