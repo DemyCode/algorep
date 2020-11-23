@@ -164,7 +164,17 @@ void Node::leader_check(const std::vector<RPCQuery>& queries)
                     if (match_index_[j] == commit_index_ + 1)
                         updated_logs_count++;
                 if (this->log_.size - 1 > commit_index_ && updated_logs_count > n_node_/2 && this->log_[this->log_.size - 1].term == currentTerm)
+                {
                     commit_index_ = this->log_.size - 1;
+                    // send commit_index update via heartbeeat to followers
+                    AppendEntries empty_append = AppendEntries(this->current_term_,
+                                                                this->rank_,
+                                                                0,
+                                                                0,
+                                                                std::vector<Entry>(), // empty entries means heartbeat in response
+                                                                this->commit_index_);
+                    send_to_all(offset_, n_node_, empty_append, 0);
+                }
             }
         }
 
@@ -215,6 +225,9 @@ void Node::handle_append_entries(const RPCQuery& query)
 
     if (append_entry.entries_.empty())
     {
+        // Update follower's commit_index if leader just committed an entry
+        if (append_entry.leader_commit_ != this->commit_index_)
+            this->commit_index_ = append_entry.leader_commit_;
         // HEARTBEAT == AppendEntries with empty entries
         if (append_entry.term_ < this->current_term_)
             send_message(AppendEntriesResponse(this->current_term_, false), append_entry.leader_id_);
@@ -222,7 +235,7 @@ void Node::handle_append_entries(const RPCQuery& query)
             send_message(AppendEntriesResponse(append_entry.term_, true), append_entry.leader_id_);
         return;
     }
-
+    if 
     if (append_entry.term_ < this->current_term_)
     { // 1.
         send_message(AppendEntriesResponse(this->current_term_, false), append_entry.leader_id_);
