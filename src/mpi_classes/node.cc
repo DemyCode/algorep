@@ -139,8 +139,10 @@ void Node::leader_check(const std::vector<RPCQuery>& queries)
             bool success = false;
             while(!success)
             {
-                std::optional<RPCQuery> append_entries_response = receive_message(i + offset);
-                if (append_entries_response.has_value() && append_entries.rpc_type_ == RPC::RPC_TYPE::APPEND_ENTRIES_RESPONSE)
+                std::optional<RPCQuery> append_entries_response = wait_message(i + offset, 50);
+                if (!append_entries_response.has_value())
+                    break;
+                else if (append_entries.rpc_type_ == RPC::RPC_TYPE::APPEND_ENTRIES_RESPONSE)
                 {
                     auto aer = std::get<AppendEntriesResponse>(append_entries_response.content_);
                     if (aer.success_)
@@ -152,7 +154,6 @@ void Node::leader_check(const std::vector<RPCQuery>& queries)
                     else
                         next_index_[i] = next_index_[i] - 1;
                 }
-                Clock::wait(50);
             }
         }
         // 4.  if (N > commitIndex && majority of matchIndex[i] ≥ N && log[N].term == currentTerm) : commitIndex = N
