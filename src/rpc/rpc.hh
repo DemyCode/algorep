@@ -18,7 +18,9 @@ public:
         SEARCH_LEADER,
         SEARCH_LEADER_RESPONSE,
         MESSAGE,
-        MESSAGE_RESPONSE
+        MESSAGE_RESPONSE,
+        GET_STATE,
+        GET_STATE_RESPONSE
     };
 
     using json = nlohmann::json;

@@ -13,7 +13,7 @@ public:
 
 private:
     static void print_help();
-    void list_ranks() const;
+    static void list_ranks();
     void
     send_message(int destination_rank, const Message::MESSAGE_TYPE& message_type, const std::string& command = "empty");
     void handle_entry(const std::vector<std::string>& tokens, const std::string& line);
@@ -22,6 +22,9 @@ private:
     void handle_start(const std::vector<std::string>& tokens);
     void handle_recover(const std::vector<std::string>& tokens);
     void handle_stop(const std::vector<std::string>& tokens);
+    void handle_get_state(const std::vector<std::string>& tokens) const;
+    static void handle_sleep(const std::vector<std::string>& tokens);
 
+    const float timeout_;
     int next_uid_;
 };

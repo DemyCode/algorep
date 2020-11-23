@@ -69,7 +69,9 @@ set(RPC_SOURCES
         src/rpc/search-leader-response.cc
         src/rpc/search-leader.cc
         src/rpc/message.cc
-        src/rpc/message-response.cc)
+        src/rpc/message-response.cc
+        src/rpc/get-state.cc
+        src/rpc/get-state-response.cc)
 
 # Exec
 set(MAIN_SOURCES

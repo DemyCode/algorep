@@ -4,6 +4,8 @@
 
 #include "append-entries-response.hh"
 #include "append-entries.hh"
+#include "get-state-response.hh"
+#include "get-state.hh"
 #include "message-response.hh"
 #include "message.hh"
 #include "new-entry-response.hh"
@@ -26,7 +28,9 @@ public:
                                    SearchLeader,
                                    SearchLeaderResponse,
                                    Message,
-                                   MessageResponse>;
+                                   MessageResponse,
+                                   GetState,
+                                   GetStateResponse>;
 
     RPCQuery(int source_rank, RPC::RPC_TYPE type, int term, content_t content);
 

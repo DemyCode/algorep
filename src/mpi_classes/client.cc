@@ -11,7 +11,7 @@
 #include "rpc/rpc-query.hh"
 
 Client::Client()
-    : timeout_(50)
+    : timeout_(50) // TODO define timeout
     , speed_(Message::SPEED_TYPE::HIGH)
     , start_(false)
     , stop_(false)
