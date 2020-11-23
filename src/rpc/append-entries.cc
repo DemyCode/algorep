@@ -32,7 +32,7 @@ AppendEntries::AppendEntries(int term, const std::string& serialized)
     : AppendEntries(term, json::parse(serialized))
 {}
 
-AppendEntries::json AppendEntries::serialize_message() const
+RPC::json AppendEntries::serialize_message() const
 {
     json json_object;
 
@@ -44,6 +44,28 @@ AppendEntries::json AppendEntries::serialize_message() const
         json_object["entries"].emplace_back(entry.serialize_message());
 
     json_object["leader_commit"] = this->leader_commit_;
+
+    return json_object;
+}
+
+AppendEntriesResponse::AppendEntriesResponse(int term, bool success)
+    : RPC(term, RPC::RPC_TYPE::APPEND_ENTRIES_RESPONSE)
+    , success_(success)
+{}
+
+AppendEntriesResponse::AppendEntriesResponse(int term, const json& serialized_json)
+    : AppendEntriesResponse(term, serialized_json["success"].get<bool>())
+{}
+
+AppendEntriesResponse::AppendEntriesResponse(int term, const std::string& serialized)
+    : AppendEntriesResponse(term, json::parse(serialized))
+{}
+
+RPC::json AppendEntriesResponse::serialize_message() const
+{
+    json json_object;
+
+    json_object["success"] = this->success_;
 
     return json_object;
 }

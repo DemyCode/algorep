@@ -10,8 +10,6 @@
 class AppendEntries : public RPC
 {
 public:
-    using json = nlohmann::json;
-
     AppendEntries(int term,
                   int leader_id,
                   int prev_log_index,
@@ -33,4 +31,17 @@ public:
     std::vector<Entry> entries_;
     // leader's commit_index
     const int leader_commit_;
+};
+
+class AppendEntriesResponse : public RPC
+{
+public:
+    AppendEntriesResponse(int term, bool success);
+    AppendEntriesResponse(int term, const json& serialized_json);
+    AppendEntriesResponse(int term, const std::string& serialized);
+
+    json serialize_message() const override;
+
+    // true if follower contained entry matching prev_log_index and prev_log_term
+    const bool success_;
 };

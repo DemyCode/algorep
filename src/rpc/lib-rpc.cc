@@ -4,6 +4,7 @@
 
 #include "message-response.hh"
 #include "message.hh"
+#include "utils/clock.hh"
 
 void send_message(const RPC& rpc_message, int destination, MPI_Request& request, int tag)
 {

@@ -61,17 +61,10 @@ set(RPC_SOURCES
         src/rpc/lib-rpc.cc
         src/rpc/append-entries.cc
         src/rpc/request-vote.cc
-        src/rpc/request-vote-response.cc
-        src/rpc/append-entries-response.cc
-        src/rpc/request-vote-response.cc
-        src/rpc/new-entry-response.cc
         src/rpc/new-entry.cc
-        src/rpc/search-leader-response.cc
         src/rpc/search-leader.cc
         src/rpc/message.cc
-        src/rpc/message-response.cc
-        src/rpc/get-state.cc
-        src/rpc/get-state-response.cc)
+        src/rpc/get-state.cc)
 
 # Exec
 set(MAIN_SOURCES

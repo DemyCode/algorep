@@ -216,19 +216,19 @@ void Controller::handle_get_state(const std::vector<std::string>& tokens) const
         auto get_state_response = std::get<GetStateResponse>(query->content_);
         switch (get_state_response.state_)
         {
-            case Node::state::LEADER:
+            case GetStateResponse::STATE::LEADER:
                 status = "LEADER";
                 break;
 
-            case Node::state::FOLLOWER:
+            case GetStateResponse::STATE::FOLLOWER:
                 status = "FOLLOWER";
                 break;
 
-            case Node::state::CANDIDATE:
+            case GetStateResponse::STATE::CANDIDATE:
                 status = "CANDIDATE";
                 break;
 
-            case Node::state::STOPPED:
+            case GetStateResponse::STATE::STOPPED:
                 status = "STOPPED";
                 break;
 

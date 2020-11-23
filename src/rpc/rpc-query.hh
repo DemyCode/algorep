@@ -2,9 +2,7 @@
 
 #include <variant>
 
-#include "append-entries-response.hh"
 #include "append-entries.hh"
-#include "get-state-response.hh"
 #include "get-state.hh"
 #include "message-response.hh"
 #include "message.hh"
