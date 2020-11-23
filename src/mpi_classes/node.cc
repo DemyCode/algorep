@@ -102,8 +102,13 @@ void Node::leader_check(const std::vector<RPCQuery>& queries)
 {
     if (this->clock_.check() < election_timeout_ / 2)
     {
-        // FIXME send to who ?
-        // send_message(AppendEntries(this->current_term_, this->rank_, 0, 0, {}, this->commit_index_));
+        AppendEntries empty_append = AppendEntries(this->current_term_,
+                                                    this->rank_,
+                                                    0,
+                                                    0,
+                                                    std::vector<Entry>(), // empty entries means heartbeat in response
+                                                    this->commit_index_);
+        send_to_all(offset_, n_node_, empty_append, 0);
         clock_.reset();
     }
     for (const auto& query : queries)
@@ -119,27 +124,27 @@ void Node::leader_check(const std::vector<RPCQuery>& queries)
             // this->last_applied_;
         }
     }
+    int updated_logs_count = 1;
     for (size_t i = 0; i < next_index_.size(); i++)
     {
         if ((int)i == this->rank_)
             continue;
         if ((int)this->log_.size() - 1 >= next_index_[i])
         {
-            // send AppendEntries RPC with log entries starting at nextIndex
-            AppendEntries append_entries(this->current_term_,
-                                        this->rank_,
-                                        next_index_[i],
-                                        log_[next_index_[i]].term_,
-                                        this->log_,
-                                        this->commit_index_);
-            send_message(append_entries, i + offset_);
-
             // check for answer from follower
             AppendEntriesResponse entry_response; 
             bool success = false;
             while(!success)
             {
-                std::optional<RPCQuery> append_entries_response = wait_message(i + offset, 50);
+                // send AppendEntries RPC with log entries starting at nextIndex
+                AppendEntries append_entries(this->current_term_,
+                                            this->rank_,
+                                            next_index_[i],
+                                            log_[next_index_[i]].term_,
+                                            this->log_,
+                                            this->commit_index_);
+                send_message(append_entries, i + offset_);
+                std::optional<RPCQuery> append_entries_response = wait_message(i + offset_, 50);
                 if (!append_entries_response.has_value())
                     break;
                 else if (append_entries.rpc_type_ == RPC::RPC_TYPE::APPEND_ENTRIES_RESPONSE)
@@ -150,32 +155,17 @@ void Node::leader_check(const std::vector<RPCQuery>& queries)
                         success = true;
                         next_index_[i] = next_index_[i] + 1;
                         match_index_[i] = match_index_[i] + 1;
+                        updated_logs_count++;
+                        if (this->log_.size - 1 > commit_index_ && updated_logs_count > n_node_/2 && this->log_[this->log_.size - 1].term == currentTerm)
+                        {
+                            commit_index_ = this->log_.size - 1;
+                        }
                     }
                     else
                         next_index_[i] = next_index_[i] - 1;
                 }
             }
         }
-        // 4.  if (N > commitIndex && majority of matchIndex[i] ≥ N && log[N].term == currentTerm) : commitIndex = N
-        int updated_logs_count = 1;
-        for (int j = 0; j < next_index_.size; j++)
-        {
-            if ((int)j == this->rank_)
-                continue;
-            if (match_index_[j] == commit_index_ + 1)
-                updated_logs_count++;
-        }
-        if (this->log_.size - 1 > commit_index_ && updated_logs_count > n_node_/2 && this->log_[this->log_.size - 1].term == currentTerm)
-        {
-            commit_index_ = this->log_.size - 1;
-            // send commit_index update via heartbeeat to followers
-            AppendEntries empty_append = AppendEntries(this->current_term_,
-                                                        this->rank_,
-                                                        0,
-                                                        0,
-                                                        std::vector<Entry>(), // empty entries means heartbeat in response
-                                                        this->commit_index_);
-            send_to_all(offset_, n_node_, empty_append, 0);
     }
 }
 
