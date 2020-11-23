@@ -17,7 +17,7 @@ Message::Message(const std::string& serialized)
     : Message(json::parse(serialized))
 {}
 
-Message::json Message::serialize_message() const
+RPC::json Message::serialize_message() const
 {
     json json_object;
 
@@ -38,4 +38,28 @@ Message::SPEED_TYPE Message::parse_speed(const std::string& speed)
         return SPEED_TYPE::HIGH;
 
     return SPEED_TYPE::HIGH;
+}
+
+MessageResponse::MessageResponse(int uid, bool success)
+    : RPC(-1, RPC::RPC_TYPE::MESSAGE_RESPONSE)
+    , uid_(uid)
+    , success_(success)
+{}
+
+MessageResponse::MessageResponse(const json& serialized_json)
+    : MessageResponse(serialized_json["uid"], serialized_json["success"])
+{}
+
+MessageResponse::MessageResponse(const std::string& serialized)
+    : MessageResponse(json::parse(serialized))
+{}
+
+RPC::json MessageResponse::serialize_message() const
+{
+    json json_object;
+
+    json_object["uid"] = this->uid_;
+    json_object["success"] = this->success_;
+
+    return json_object;
 }

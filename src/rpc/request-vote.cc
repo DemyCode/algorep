@@ -18,13 +18,35 @@ RequestVote::RequestVote(int term, const std::string& serialized)
     : RequestVote(term, json::parse(serialized))
 {}
 
-RequestVote::json RequestVote::serialize_message() const
+RPC::json RequestVote::serialize_message() const
 {
     json json_object;
 
     json_object["candidate_id"] = this->candidate_id_;
     json_object["last_log_index"] = this->last_log_index_;
     json_object["last_log_term"] = this->last_log_term_;
+
+    return json_object;
+}
+
+RequestVoteResponse::RequestVoteResponse(int term, bool vote_granted)
+    : RPC(term, RPC::RPC_TYPE::REQUEST_VOTE_RESPONSE)
+    , vote_granted_(vote_granted)
+{}
+
+RequestVoteResponse::RequestVoteResponse(int term, const json& serialized_json)
+    : RequestVoteResponse(term, serialized_json["vote_granted"].get<bool>())
+{}
+
+RequestVoteResponse::RequestVoteResponse(int term, const std::string& serialized)
+    : RequestVoteResponse(term, json::parse(serialized))
+{}
+
+RPC::json RequestVoteResponse::serialize_message() const
+{
+    json json_object;
+
+    json_object["vote_granted"] = this->vote_granted_;
 
     return json_object;
 }

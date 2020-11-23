@@ -2,7 +2,6 @@
 
 #include <iostream>
 
-#include "message-response.hh"
 #include "message.hh"
 #include "utils/clock.hh"
 

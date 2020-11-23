@@ -4,14 +4,10 @@
 
 #include "append-entries.hh"
 #include "get-state.hh"
-#include "message-response.hh"
 #include "message.hh"
-#include "new-entry-response.hh"
 #include "new-entry.hh"
-#include "request-vote-response.hh"
 #include "request-vote.hh"
 #include "rpc.hh"
-#include "search-leader-response.hh"
 #include "search-leader.hh"
 
 class RPCQuery

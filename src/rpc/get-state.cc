@@ -13,7 +13,7 @@ GetState::GetState(const std::string& serialized)
     : GetState(json::parse(serialized))
 {}
 
-GetState::json GetState::serialize_message() const
+RPC::json GetState::serialize_message() const
 {
     json json_object;
 
@@ -35,7 +35,7 @@ GetStateResponse::GetStateResponse(const std::string& serialized)
     : GetStateResponse(json::parse(serialized))
 {}
 
-GetStateResponse::json GetStateResponse::serialize_message() const
+RPC::json GetStateResponse::serialize_message() const
 {
     json json_object;
 
