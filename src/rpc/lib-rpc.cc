@@ -2,8 +2,8 @@
 
 #include <iostream>
 
-#include "message-response.hh"
 #include "message.hh"
+#include "utils/clock.hh"
 
 void send_message(const RPC& rpc_message, int destination, MPI_Request& request, int tag)
 {
@@ -47,52 +47,56 @@ std::optional<RPCQuery> receive_message(int source, int tag)
     {
         case RPC::RPC_TYPE::APPEND_ENTRIES:
             return std::make_optional<RPCQuery>(
-                RPCQuery(source, message_type, term, RPCQuery::content_t(AppendEntries(term, message_content))));
+                source, message_type, term, RPCQuery::content_t(AppendEntries(term, message_content)));
 
         case RPC::RPC_TYPE::APPEND_ENTRIES_RESPONSE:
-            return std::make_optional<RPCQuery>(RPCQuery(
-                source, message_type, term, RPCQuery::content_t(AppendEntriesResponse(term, message_content))));
+            return std::make_optional<RPCQuery>(
+                source, message_type, term, RPCQuery::content_t(AppendEntriesResponse(term, message_content)));
 
         case RPC::RPC_TYPE::REQUEST_VOTE:
             return std::make_optional<RPCQuery>(
-                RPCQuery(source, message_type, term, RPCQuery::content_t(RequestVote(term, message_content))));
+                source, message_type, term, RPCQuery::content_t(RequestVote(term, message_content)));
 
         case RPC::RPC_TYPE::REQUEST_VOTE_RESPONSE:
             return std::make_optional<RPCQuery>(
-                RPCQuery(source, message_type, term, RPCQuery::content_t(RequestVoteResponse(term, message_content))));
+                source, message_type, term, RPCQuery::content_t(RequestVoteResponse(term, message_content)));
 
         case RPC::RPC_TYPE::NEW_ENTRY:
             return std::make_optional<RPCQuery>(
-                RPCQuery(source, message_type, term, RPCQuery::content_t(NewEntry(message_content))));
+                source, message_type, term, RPCQuery::content_t(NewEntry(message_content)));
 
         case RPC::RPC_TYPE::NEW_ENTRY_RESPONSE:
             return std::make_optional<RPCQuery>(
-                RPCQuery(source, message_type, term, RPCQuery::content_t(NewEntryResponse(message_content))));
+                source, message_type, term, RPCQuery::content_t(NewEntryResponse(message_content)));
 
         case RPC::RPC_TYPE::SEARCH_LEADER:
             return std::make_optional<RPCQuery>(
-                RPCQuery(source, message_type, term, RPCQuery::content_t(SearchLeader(message_content))));
+                source, message_type, term, RPCQuery::content_t(SearchLeader(message_content)));
 
         case RPC::RPC_TYPE::SEARCH_LEADER_RESPONSE:
             return std::make_optional<RPCQuery>(
-                RPCQuery(source, message_type, term, RPCQuery::content_t(SearchLeaderResponse(message_content))));
+                source, message_type, term, RPCQuery::content_t(SearchLeaderResponse(message_content)));
 
         case RPC::RPC_TYPE::MESSAGE:
             return std::make_optional<RPCQuery>(
-                RPCQuery(source, message_type, term, RPCQuery::content_t(Message(message_content))));
+                source, message_type, term, RPCQuery::content_t(Message(message_content)));
 
         case RPC::RPC_TYPE::MESSAGE_RESPONSE:
             return std::make_optional<RPCQuery>(
-                RPCQuery(source, message_type, term, RPCQuery::content_t(MessageResponse(message_content))));
+                source, message_type, term, RPCQuery::content_t(MessageResponse(message_content)));
+
+        case RPC::RPC_TYPE::GET_STATE:
+            return std::make_optional<RPCQuery>(
+                source, message_type, term, RPCQuery::content_t(GetState(message_content)));
+
+        case RPC::RPC_TYPE::GET_STATE_RESPONSE:
+            return std::make_optional<RPCQuery>(
+                source, message_type, term, RPCQuery::content_t(GetStateResponse(message_content)));
     }
 }
 
 void receive_all_messages(int rank, int offset, int n_node, std::vector<RPCQuery>& queries, int tag)
 {
-    // PROBING IS BASICALLY TRYING TO RECEIVE FROM ALL SERVERS
-    // AND STOCKING EVERY MESSAGE : std::vector<RPC> messages
-    // where messages.size() == n_node_
-
     for (int source_rank = offset; source_rank < offset + n_node; source_rank++)
     {
         if (source_rank == rank)
@@ -103,6 +107,20 @@ void receive_all_messages(int rank, int offset, int n_node, std::vector<RPCQuery
         if (query.has_value())
             queries.emplace_back(query.value());
     }
+}
+
+std::optional<RPCQuery> wait_message(int source, float timeout, int tag)
+{
+    Clock clock;
+
+    while (clock.check() < timeout)
+    {
+        auto query = receive_message(source, tag);
+        if (query.has_value())
+            return query;
+    }
+
+    return std::nullopt;
 }
 
 void send_to_all(int offset, int n_node, const RPC& rpc_message, int tag)

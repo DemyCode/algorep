@@ -6,12 +6,15 @@
 #include <vector>
 
 #include "mpi_classes/process-information.hh"
+#include "rpc/get-state.hh"
 #include "rpc/lib-rpc.hh"
 #include "rpc/message.hh"
+#include "utils/clock.hh"
 #include "utils/string_utils.hh"
 
 Controller::Controller()
-    : next_uid_(0)
+    : timeout_(500) // TODO define timeout
+    , next_uid_(0)
 {}
 
 void Controller::print_help()
@@ -26,10 +29,12 @@ void Controller::print_help()
         << std::endl
         << "- crash [process_rank]: crash the process_rank" << std::endl
         << "- recover [process_rank]: recover the process_rank" << std::endl
-        << "- stop [process_rank]: stop the process_rank" << std::endl;
+        << "- stop [process_rank]: stop the process_rank" << std::endl
+        << "- get_state [server_rank]: get the state of the server_rank" << std::endl
+        << "- sleep [milliseconds]: sleep the current process for milliseconds" << std::endl;
 }
 
-void Controller::list_ranks() const
+void Controller::list_ranks()
 {
     int max_size = std::to_string(ProcessInformation::instance().size_ - 1).size();
     std::string separator(17 + max_size, '-');
@@ -184,6 +189,73 @@ void Controller::handle_stop(const std::vector<std::string>& tokens)
     this->send_message(destination_rank, Message::MESSAGE_TYPE::PROCESS_STOP);
 }
 
+void Controller::handle_get_state(const std::vector<std::string>& tokens) const
+{
+    if (tokens.size() <= 1)
+    {
+        std::cout << "Missing arguments" << std::endl;
+        return;
+    }
+
+    int destination_rank = parse_int(tokens[1]);
+    if (!ProcessInformation::instance().is_rank_node(destination_rank))
+    {
+        std::cout << "Invalid rank: " << tokens[1] << std::endl;
+        return;
+    }
+
+    GetState get_state(destination_rank);
+    ::send_message(get_state, destination_rank);
+
+    auto query = wait_message(destination_rank, this->timeout_);
+
+    std::string status = "DEAD";
+
+    if (query.has_value())
+    {
+        auto get_state_response = std::get<GetStateResponse>(query->content_);
+        switch (get_state_response.state_)
+        {
+            case GetStateResponse::STATE::LEADER:
+                status = "LEADER";
+                break;
+
+            case GetStateResponse::STATE::FOLLOWER:
+                status = "FOLLOWER";
+                break;
+
+            case GetStateResponse::STATE::CANDIDATE:
+                status = "CANDIDATE";
+                break;
+
+            case GetStateResponse::STATE::STOPPED:
+                status = "STOPPED";
+                break;
+
+        }
+    }
+
+    std::cout << "Status " << destination_rank << ": " << status << std::endl;
+}
+
+void Controller::handle_sleep(const std::vector<std::string>& tokens)
+{
+    if (tokens.size() <= 1)
+    {
+        std::cout << "Missing arguments" << std::endl;
+        return;
+    }
+
+    int milliseconds = parse_int(tokens[1]);
+    if (milliseconds < 0)
+    {
+        std::cout << "Invalid milliseconds, must be a positive integer: " << tokens[1] << std::endl;
+        return;
+    }
+
+    Clock::wait(milliseconds);
+}
+
 void Controller::run()
 {
     std::cout << "> ";
@@ -211,6 +283,10 @@ void Controller::run()
                 this->handle_recover(tokens);
             else if (tokens[0] == "stop")
                 this->handle_stop(tokens);
+            else if (tokens[0] == "get_state")
+                this->handle_get_state(tokens);
+            else if (tokens[0] == "sleep")
+                this->handle_sleep(tokens);
             else
             {
                 std::cout << "Command not found: " << tokens[0] << std::endl;

@@ -5,8 +5,6 @@
 class Message : public RPC
 {
 public:
-    using json = nlohmann::json;
-
     enum MESSAGE_TYPE
     {
         CLIENT_CREATE_NEW_ENTRY,
@@ -35,4 +33,17 @@ public:
     const int uid_;
     const MESSAGE_TYPE message_type_;
     const std::string message_content_;
+};
+
+class MessageResponse : public RPC
+{
+public:
+    MessageResponse(int uid, bool success);
+    MessageResponse(const json& serialized_json);
+    MessageResponse(const std::string& serialized);
+
+    json serialize_message() const override;
+
+    const int uid_;
+    const bool success_;
 };

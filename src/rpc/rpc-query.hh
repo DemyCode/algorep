@@ -2,16 +2,12 @@
 
 #include <variant>
 
-#include "append-entries-response.hh"
 #include "append-entries.hh"
-#include "message-response.hh"
+#include "get-state.hh"
 #include "message.hh"
-#include "new-entry-response.hh"
 #include "new-entry.hh"
-#include "request-vote-response.hh"
 #include "request-vote.hh"
 #include "rpc.hh"
-#include "search-leader-response.hh"
 #include "search-leader.hh"
 
 class RPCQuery
@@ -26,7 +22,9 @@ public:
                                    SearchLeader,
                                    SearchLeaderResponse,
                                    Message,
-                                   MessageResponse>;
+                                   MessageResponse,
+                                   GetState,
+                                   GetStateResponse>;
 
     RPCQuery(int source_rank, RPC::RPC_TYPE type, int term, content_t content);
 
