@@ -47,7 +47,7 @@ void Client::run()
 
         // Handle queries
         std::vector<RPCQuery> queries;
-        receive_all_messages(ProcessInformation::instance().rank_, 0, ProcessInformation::instance().size_, queries);
+        receive_all_messages(0, ProcessInformation::instance().size_, queries);
         this->handle_queries(queries);
 
         // Check that all messages are sent

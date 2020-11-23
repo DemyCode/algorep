@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "message.hh"
+#include "mpi_classes/process-information.hh"
 #include "utils/clock.hh"
 
 void send_message(const RPC& rpc_message, int destination, MPI_Request& request, int tag)
@@ -95,11 +96,11 @@ std::optional<RPCQuery> receive_message(int source, int tag)
     }
 }
 
-void receive_all_messages(int rank, int offset, int n_node, std::vector<RPCQuery>& queries, int tag)
+void receive_all_messages(int offset, int n_node, std::vector<RPCQuery>& queries, int tag)
 {
     for (int source_rank = offset; source_rank < offset + n_node; source_rank++)
     {
-        if (source_rank == rank)
+        if (source_rank == ProcessInformation::instance().rank_)
             continue;
 
         auto query = receive_message(source_rank, tag);
@@ -123,9 +124,11 @@ std::optional<RPCQuery> wait_message(int source, float timeout, int tag)
     return std::nullopt;
 }
 
-void send_to_all(int rank, int offset, int n_node, const RPC& rpc_message, int tag)
+void send_to_all(int offset, int n_node, const RPC& rpc_message, int tag)
 {
     for (int source_rank = offset; source_rank < offset + n_node; source_rank++)
-        if (rank != source_rank)
+    {
+        if (ProcessInformation::instance().rank_ != source_rank)
             send_message(rpc_message, source_rank, tag);
+    }
 }
