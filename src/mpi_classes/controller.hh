@@ -22,6 +22,7 @@ private:
     void handle_start(const std::vector<std::string>& tokens);
     void handle_recover(const std::vector<std::string>& tokens);
     void handle_stop(const std::vector<std::string>& tokens);
+    void handle_auto_stop(const std::vector<std::string>& tokens);
     void handle_get_state(const std::vector<std::string>& tokens) const;
     static void handle_sleep(const std::vector<std::string>& tokens);
 

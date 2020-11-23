@@ -23,6 +23,7 @@ private:
     void send_next_entry();
     void check_timeout();
     void reset_leader();
+    static void stop_nodes();
 
     const float timeout_;
 
@@ -30,6 +31,7 @@ private:
 
     bool start_;
     bool stop_;
+    bool auto_stop_;
 
     int leader_;
     Clock leader_search_clock_;

@@ -15,6 +15,7 @@ Client::Client()
     , speed_(Message::SPEED_TYPE::HIGH)
     , start_(false)
     , stop_(false)
+    , auto_stop_(false)
     , leader_(-1)
     , leader_search_clock_()
     , entries_to_send_()
@@ -36,23 +37,29 @@ void Client::run()
     {
         Clock::wait(this->speed_);
 
-        // If no leader, search for a new one
-        if (this->start_)
-        {
-            if (this->leader_ == -1)
-                this->search_leader();
-            else if (this->entry_sent_)
-                this->send_next_entry();
-        }
-
         // Handle queries
         std::vector<RPCQuery> queries;
         receive_all_messages(0, ProcessInformation::instance().size_, queries);
         this->handle_queries(queries);
 
+        // Stop if auto stop is on
+        if (this->entries_to_send_.empty() && this->auto_stop_)
+        {
+            stop_nodes();
+            this->stop_ = true;
+        }
+
+        if (!this->start_)
+            continue;
+
+        // Search for leader or send next entry
+        if (this->leader_ == -1)
+            this->search_leader();
+        else if (this->entry_sent_)
+            this->send_next_entry();
+
         // Check that all messages are sent
-        if (this->start_)
-            this->check_timeout();
+        this->check_timeout();
     }
 }
 
@@ -85,6 +92,10 @@ void Client::handle_message(const RPCQuery& query)
         case Message::MESSAGE_TYPE::PROCESS_RECOVER:
             this->start_ = true;
             this->reset_leader();
+            break;
+
+        case Message::MESSAGE_TYPE::CLIENT_AUTO_STOP:
+            this->auto_stop_ = true;
             break;
 
         case Message::MESSAGE_TYPE::PROCESS_SET_SPEED:
@@ -162,4 +173,10 @@ void Client::reset_leader()
 {
     this->leader_ = -1;
     this->leader_search_clock_.reset();
+}
+
+void Client::stop_nodes()
+{
+    Message message(0, Message::MESSAGE_TYPE::PROCESS_STOP, "empty");
+    send_to_all(ProcessInformation::instance().node_offset_, ProcessInformation::instance().n_node_, message);
 }
