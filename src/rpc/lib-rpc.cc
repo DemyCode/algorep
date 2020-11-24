@@ -21,7 +21,7 @@ std::optional<RPCQuery> send_and_wait_message(const RPC& rpc_message, size_t des
     return wait_message(destination, timeout, tag);
 }
 
-std::optional<RPCQuery> g(size_t source, int tag)
+std::optional<RPCQuery> receive_message(size_t source, int tag)
 {
     MPI_Status mpi_status;
     int flag;
