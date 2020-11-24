@@ -31,7 +31,7 @@ public:
 
 private:
     void set_election_timeout();
-
+    void reset_node();
 
     void all_server_check(const std::vector<RPCQuery>& queries);
     void follower_check(const std::vector<RPCQuery>& queries);
