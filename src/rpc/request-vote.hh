@@ -19,7 +19,7 @@ public:
     // index of candidate's last log entry
     const size_t last_log_index_;
     // term of candidate's last log entry
-    const int last_log_term_;
+    const size_t last_log_term_;
 };
 
 class RequestVoteResponse : public RPC

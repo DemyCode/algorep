@@ -16,6 +16,6 @@ public:
 
     json serialize_message() const;
 
-    int term_;
+    size_t term_;
     std::string command_;
 };

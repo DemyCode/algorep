@@ -31,6 +31,6 @@ public:
     std::string serialize() const;
     virtual json serialize_message() const = 0;
 
-    const int term_;
+    const size_t term_;
     const RPC_TYPE rpc_type_;
 };

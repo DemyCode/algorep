@@ -26,11 +26,11 @@ public:
     // index of log entry immediately preceding new ones
     const size_t prev_log_index_;
     // term of prev_log_index entry
-    const int prev_log_term_;
+    const size_t prev_log_term_;
     // log entries to store (empty for heartbeat may send more than one for efficiency)
     std::vector<Entry> entries_;
     // leader's commit_index
-    const size_t leader_commit_;
+    const int leader_commit_;
 };
 
 class AppendEntriesResponse : public RPC
