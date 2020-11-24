@@ -28,7 +28,7 @@ void Node::set_election_timeout() {
 
 void Node::run() {
     bool running = true;
-    debug_write("Node is" + std::to_string(ProcessInformation::instance().n_node_) + " running",
+    debug_write("Node " + std::to_string(ProcessInformation::instance().rank_) + " is running",
                 debug_clock_.check());
     while (running) {
         Clock::wait(1);
@@ -65,9 +65,12 @@ void Node::convert_to_candidate() {
     this->vote_count_ = 1;
     this->current_term_ += 1;
     this->clock_.reset();
+    int last_log_term = -1;
+    if (log_.size() != 0)
+        last_log_term = log_[log_.size() - 1].term_;
     send_to_all(ProcessInformation::instance().node_offset_, ProcessInformation::instance().n_node_,
                 RequestVote(current_term_, ProcessInformation::instance().rank_, log_.size() - 1,
-                            log_[log_.size() - 1].term_));
+                            last_log_term));
     this->set_election_timeout();
 }
 
@@ -117,14 +120,29 @@ std::vector<Entry> slice_vector(std::vector<Entry> vect, int begin) {
 
 void Node::leader_check(const std::vector<RPCQuery> &queries) {
     if (this->clock_.check() < election_timeout_ / 2) {
-        AppendEntries empty_append = AppendEntries(this->current_term_,
+        for (size_t i = 0; i < next_index_.size(); i++) {
+            if (i == ProcessInformation::instance().rank_)
+                continue;
+            // if ((int) this->log_.size() - 1 >= next_index_[i])
+            {
+                // send AppendEntries RPC with log entries starting at nextIndex
+                AppendEntries append_entries(this->current_term_,
+                                             ProcessInformation::instance().rank_,
+                                             next_index_[i] - 1,
+                                             log_[next_index_[i] - 1].term_,
+                                             slice_vector(log_, next_index_[i]),
+                                             this->commit_index_);
+                send_message(append_entries, i + ProcessInformation::instance().node_offset_);
+            }
+        }
+        /*AppendEntries empty_append = AppendEntries(this->current_term_,
                                                    ProcessInformation::instance().rank_,
                                                    this->log_.size() - 1,
                                                    log_[this->log_.size() - 1].term_,
                                                    std::vector<Entry>(), // empty entries means heartbeat in response
                                                    this->commit_index_);
         send_to_all(
-                ProcessInformation::instance().node_offset_, ProcessInformation::instance().n_node_, empty_append, 0);
+                ProcessInformation::instance().node_offset_, ProcessInformation::instance().n_node_, empty_append, 0);*/
         clock_.reset();
     }
 
@@ -149,21 +167,6 @@ void Node::leader_check(const std::vector<RPCQuery> &queries) {
         }
     }
 
-    for (size_t i = 0; i < next_index_.size(); i++) {
-        if (i == ProcessInformation::instance().rank_)
-            continue;
-        if ((int) this->log_.size() - 1 >= next_index_[i]) {
-            // send AppendEntries RPC with log entries starting at nextIndex
-            AppendEntries append_entries(this->current_term_,
-                                         ProcessInformation::instance().rank_,
-                                         next_index_[i] - 1,
-                                         log_[next_index_[i] - 1].term_,
-                                         slice_vector(log_, next_index_[i]),
-                                         this->commit_index_);
-            send_message(append_entries, i + ProcessInformation::instance().node_offset_);
-        }
-    }
-
     int N = commit_index_ + 1;
     size_t majority = 1;
     for (int index_i : match_index_) {
@@ -179,6 +182,8 @@ void Node::candidate_check(const std::vector<RPCQuery> &queries) {
         if (query.type_ == RPC::RPC_TYPE::REQUEST_VOTE_RESPONSE) {
             RequestVoteResponse request_vote_response = std::get<RequestVoteResponse>(query.content_);
             vote_count_ += request_vote_response.vote_granted_ ? 1 : 0;
+            debug_write("Node " + std::to_string(ProcessInformation::instance().rank_) + " has " +
+                        std::to_string(vote_count_) + " vote.", debug_clock_.check());
         }
         if (query.type_ == RPC::RPC_TYPE::APPEND_ENTRIES) {
             AppendEntries append_entries = std::get<AppendEntries>(query.content_);
@@ -245,10 +250,12 @@ void Node::handle_request_vote(const RPCQuery &query) {
         send_message(RequestVoteResponse(current_term_, false), request_vote.candidate_id_);
         return;
     }
+    bool vote_granted = true;
     if (voted_for_ == -1) {
         if (log_[request_vote.last_log_index_].term_ == request_vote.last_log_term_) {
-            if (request_vote.last_log_index_ > log_.size() - 1)
+            if (request_vote.last_log_index_ > log_.size() - 1){
                 send_message(RequestVoteResponse(request_vote.term_, true), request_vote.candidate_id_);
+            }
             else
                 send_message(RequestVoteResponse(request_vote.term_, false), request_vote.candidate_id_);
         } else if (log_[request_vote.last_log_index_].term_ < request_vote.last_log_term_) {
