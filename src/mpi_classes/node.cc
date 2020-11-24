@@ -157,7 +157,7 @@ void Node::all_server_check(const std::vector<RPCQuery> &queries) {
         {
             if (this->state_ == state_t::LEADER)
             {
-                SearchLeaderResponse sl_response(this->rank_);
+                SearchLeaderResponse sl_response(ProcessInformation::instance().rank_);
                 send_message(sl_response, query.source_rank_);
             }
         }
