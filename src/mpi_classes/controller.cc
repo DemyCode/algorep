@@ -31,7 +31,9 @@ void Controller::print_help()
         << " - crash [process_rank]              - crash the process_rank" << std::endl
         << " - recover [process_rank]            - recover the process_rank" << std::endl
         << " - stop [process_rank]               - stop the process_rank" << std::endl
-        << " - timeout [server_rank]             - simulate an election timeout on the server_rank" << std::endl
+        << " - timeout [server_rank]             - simulate an election timeout on the server_rank (force to be "
+           "candidate)"
+        << std::endl
         << " - wait_finish [client_rank]         - wait that a client has send all his messages" << std::endl
         << " - get_state [server_rank]           - get the state of the server_rank" << std::endl
         << " - sleep [milliseconds]              - sleep the current process for milliseconds" << std::endl;
