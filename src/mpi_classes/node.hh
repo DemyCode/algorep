@@ -47,6 +47,9 @@ private:
 
     state_t state_;
     float election_timeout_;
+    Message::SPEED_TYPE speed_;
+    bool stop_;
+    bool crash_;
     Clock clock_;
     Clock debug_clock_;
     size_t vote_count_;

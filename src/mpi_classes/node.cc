@@ -7,6 +7,9 @@
 Node::Node()
         : state_(state_t::FOLLOWER),
           election_timeout_(),
+          speed_(Message::SPEED_TYPE::HIGH),
+          stop_(false),
+          crash_(false),
           clock_(),
           debug_clock_(),
           vote_count_(0),
@@ -27,11 +30,19 @@ void Node::set_election_timeout() {
 }
 
 void Node::run() {
-    bool running = true;
     debug_write("Node " + std::to_string(ProcessInformation::instance().rank_) + " is running",
                 debug_clock_.check());
-    while (running) {
-        Clock::wait(1);
+    while (!this->stop_) {
+        if (this->crash_)
+        {
+            this = Node();
+            this->crash_ = true;
+            std::vector<RPCQuery> queries;
+            receive_all_messages(0, ProcessInformation::instance().size_, queries);
+            this->all_server_check(queries);
+            continue;
+        }
+        Clock::wait(this->speed_);
         std::vector<RPCQuery> queries;
         // Listen to everything
         receive_all_messages(0, ProcessInformation::instance().size_, queries);
@@ -47,9 +58,6 @@ void Node::run() {
 
         else if (this->state_ == state_t::LEADER)
             this->leader_check(queries);
-
-        // TODO Create end of loop based on REPL state::STOPPED
-        // FIXME remove return
     }
     return;
 }
@@ -97,6 +105,28 @@ void Node::all_server_check(const std::vector<RPCQuery> &queries) {
             current_term_ = query.term_;
             convert_to_follower();
         }
+        const auto& message = std::get<Message>(query.content_);
+        bool success = true;
+        switch (message.message_type_)
+        {
+            case Message::MESSAGE_TYPE::PROCESS_SET_SPEED:
+                this->speed_ = Message::parse_speed(message.message_content_);
+                break;
+            case Message::MESSAGE_TYPE::PROCESS_STOP:
+                this->stop_ = true;
+                break;
+            case Message::MESSAGE_TYPE::PROCESS_CRASH:
+                this->crashed_ = true;
+                break;
+            case Message::MESSAGE_TYPE::PROCESS_RECOVER:
+                this->crash_ = false;
+                break;
+            default:
+                success = false;
+                break;
+        }
+        MessageResponse message_response(success);
+        send_message(message_response, query.source_rank_);
     }
 }
 
