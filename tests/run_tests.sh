@@ -59,7 +59,12 @@ run_integration_test()
         for server_rank in $(seq "$((client_count + 1))" "$((client_count + server_count))"); do
             log_file="log${server_rank}.txt"
 
-            diff=$(diff -y --suppress-common-lines "${log_file}" "${test_file_log}")
+            diff=$(diff -y --suppress-common-lines "${log_file}" "${test_file_log}" 2> /dev/null)
+            output="$?"
+
+            if [ "${output}" -ne 0 ]; then
+                diff="Log file does not exist"
+            fi
 
             if [ -n "${diff}" ]; then
                 res=1
