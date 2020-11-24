@@ -123,10 +123,10 @@ void Node::all_server_check(const std::vector<RPCQuery> &queries) {
             current_term_ = query.term_;
             convert_to_follower();
         }
-        const auto& message = std::get<RPC>(query.content_);
         bool success = true;
-        if (instanceof<Message>(message))
+        if (query.type_ == RPC::RPC_TYPE::MESSAGE)
         {
+            const auto& message = std::get<Message>(query.content_);
             switch (message.message_type_)
             {
                 case Message::MESSAGE_TYPE::PROCESS_SET_SPEED:
@@ -147,9 +147,6 @@ void Node::all_server_check(const std::vector<RPCQuery> &queries) {
             }
             MessageResponse message_response(success);
             send_message(message_response, query.source_rank_);
-        }
-        else if (instanceof<GetState>(message)){
-
         }
     }
 }
