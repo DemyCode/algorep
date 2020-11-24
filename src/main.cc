@@ -1,4 +1,4 @@
-#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <mpi.h>
 
@@ -41,11 +41,14 @@ int main(int argc, char* argv[])
 
         for (int i = 0; i < n_client; i++)
         {
-            if (!std::filesystem::is_regular_file(argv[3 + i]))
+            std::ifstream ifile;
+            ifile.open(argv[3 + i]);
+            if (!ifile)
             {
                 std::cerr << "Invalid path: " << argv[3 + i] << std::endl;
                 return 1;
             }
+            ifile.close();
         }
     }
 

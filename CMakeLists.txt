@@ -6,7 +6,6 @@ find_package(MPI REQUIRED)
 #################################################
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_COMPILER mpic++)
 
 # Automatic Compilation Flag to Release
@@ -83,4 +82,3 @@ add_executable(${MAIN_TARGET}
         ${MAIN_EXEC_SOURCES}
         ${LIB_SOURCES}
         ${UTILS_SOURCES})
-target_link_libraries(${MAIN_TARGET} stdc++fs)
