@@ -1,5 +1,7 @@
 #!/bin/sh
 
+TIMEOUT=2
+
 RED='\033[0;31m'
 LIGHT_GREEN='\033[0;92m'
 GREEN='\033[0;32m'
@@ -21,22 +23,25 @@ run_integration_test()
     generate_command_list=$(sed '3q;d' "${test_file_input}")
     commands=$(tail -n +4 "${test_file_input}")
 
-    echo "${commands}" | ./run.sh "${client_count}" "${server_count}" "${generate_command_list}" 1> /tmp/raft_output 2> /dev/null
+    echo "${commands}" | timeout "${TIMEOUT}" ./run.sh "${client_count}" "${server_count}" ${generate_command_list} 1> /tmp/raft_output 2> /dev/null
+    output="$?"
 
     diff=$(diff -y --suppress-common-lines /tmp/raft_output "${test_file_output}")
 
     res=0
 
-    if [ -n "${diff}" ]; then
+    if [ -n "${diff}" ] || [ "${output}" -eq 124 ]; then
         res=1
     fi
 
-    if [ "${res}" -eq 1 ]; then
-        echo "${RED}${INVERT}[FAIL]${NC}${INVERT} - ${test_name}${NC}"
+    if [ "${output}" -eq 124 ]; then
+        echo "${ORANGE}${INVERT}[TIMEOUT]${NC}${INVERT} - ${test_name}${NC}"
+    elif [ "${res}" -eq 1 ]; then
+        echo "${RED}${INVERT}[ FAIL  ]${NC}${INVERT} - ${test_name}${NC}"
         echo "${diff}"
         echo ""
     else
-        echo "${GREEN}${INVERT}[ OK ]${NC}${INVERT} - ${test_name}${NC}"
+        echo "${GREEN}${INVERT}[  OK   ]${NC}${INVERT} - ${test_name}${NC}"
     fi
 
     return "${res}"
