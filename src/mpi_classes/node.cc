@@ -29,13 +29,31 @@ void Node::set_election_timeout() {
     this->election_timeout_ = (float) (std::rand() % 150) + 150;
 }
 
+void Node::reset_node()
+{
+    this->state = state_t::FOLLOWER;
+    this->speed_ = Message::SPEED_TYPE::HIGH;
+    this->stop_ = false;
+    this->crash_ = false;
+    this->vote_count_ = 0;
+    this->new_entries_ = std::queue<RPCQuery>();
+    this->current_term_ = 0;
+    this->voted_for_ = 0;
+    this->log_ = std::vector<Entry>();
+    this->commit_index_ = -1;
+    this->last_applied_ = -1;
+    this->next_index_ = std::vector<int>();
+    this->match_index_ = std::vector<int>();
+    this->convert_to_follower();
+}
+
 void Node::run() {
     debug_write("Node " + std::to_string(ProcessInformation::instance().rank_) + " is running",
                 debug_clock_.check());
     while (!this->stop_) {
         if (this->crash_)
         {
-            this = Node();
+            reset_node();
             this->crash_ = true;
             std::vector<RPCQuery> queries;
             receive_all_messages(0, ProcessInformation::instance().size_, queries);
@@ -105,28 +123,34 @@ void Node::all_server_check(const std::vector<RPCQuery> &queries) {
             current_term_ = query.term_;
             convert_to_follower();
         }
-        const auto& message = std::get<Message>(query.content_);
+        const auto& message = std::get<RPC>(query.content_);
         bool success = true;
-        switch (message.message_type_)
+        if (instanceof<Message>(message))
         {
-            case Message::MESSAGE_TYPE::PROCESS_SET_SPEED:
-                this->speed_ = Message::parse_speed(message.message_content_);
-                break;
-            case Message::MESSAGE_TYPE::PROCESS_STOP:
-                this->stop_ = true;
-                break;
-            case Message::MESSAGE_TYPE::PROCESS_CRASH:
-                this->crashed_ = true;
-                break;
-            case Message::MESSAGE_TYPE::PROCESS_RECOVER:
-                this->crash_ = false;
-                break;
-            default:
-                success = false;
-                break;
+            switch (message.message_type_)
+            {
+                case Message::MESSAGE_TYPE::PROCESS_SET_SPEED:
+                    this->speed_ = Message::parse_speed(message.message_content_);
+                    break;
+                case Message::MESSAGE_TYPE::PROCESS_STOP:
+                    this->stop_ = true;
+                    break;
+                case Message::MESSAGE_TYPE::PROCESS_CRASH:
+                    this->crash_ = true;
+                    break;
+                case Message::MESSAGE_TYPE::PROCESS_RECOVER:
+                    this->crash_ = false;
+                    break;
+                default:
+                    success = false;
+                    break;
+            }
+            MessageResponse message_response(success);
+            send_message(message_response, query.source_rank_);
         }
-        MessageResponse message_response(success);
-        send_message(message_response, query.source_rank_);
+        else if (instanceof<GetState>(message)){
+
+        }
     }
 }
 
