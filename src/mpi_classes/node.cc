@@ -31,7 +31,7 @@ void Node::set_election_timeout() {
 
 void Node::reset_node()
 {
-    this->state = state_t::FOLLOWER;
+    this->state_ = state_t::FOLLOWER;
     this->speed_ = Message::SPEED_TYPE::HIGH;
     this->stop_ = false;
     this->crash_ = false;
