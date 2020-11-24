@@ -6,7 +6,7 @@ Node::Node(int rank, int n_node, int offset, int size)
     , offset_(offset)
     , size_(size)
     , state_(state::FOLLOWER)
-    , election_timeout_(150)
+    , election_timeout_(std::rand(150) + 150)
     , clock_()
     , vote_count_(0)
     , current_term_(0)
@@ -55,6 +55,7 @@ void Node::convert_to_candidate()
     this->voted_for_ = this->rank_;
     this->vote_count_ = 1;
     this->clock_.reset();
+    this->election_timeout_ = std::rand(150) + 150;
     // When doing communications across server nodes the range is [offset_ : offset_ + n_node_]
     RequestVote request_vote_query(this->current_term_, this->rank_, log_.size() - 1, log_[log_.size() - 1].term_);
     for (int i = offset_; i < offset_ + n_node_; i++)
@@ -257,29 +258,28 @@ void Node::handle_append_entries(const RPCQuery& query)
 
 void Node::handle_request_vote(const RPCQuery& query)
 {
-    // FIXME
-    auto request_vote = std::get<RequestVote>(query.content_);
-    bool vote_granted = false;
-
-    if (request_vote.term_ < this->current_term_)
-        vote_granted = false;
-    else if (request_vote.term_ > this->current_term_)
+    // FIXME VOTEDFOR ON S'EN BAT LES COUILLES (POUR L'INSTANT)
+    RequestVote request_vote = std::get<RequestVote>(query.content_);
+    if (request_vote.term_ < current_term_)
     {
-        vote_granted = true;
-        this->state_ = state::FOLLOWER;
-        this->current_term_ = request_vote.term_;
+        send_message(RequestVoteResponse(current_term_, false), request_vote.candidate_id_);
+        return;
+    }
+    if (log_[request_vote.last_log_index_].term_ == request_vote.last_log_term_)
+    {
+        if (request_vote.last_log_index_ > log_.size() - 1)
+            send_message(RequestVoteResponse(request_vote.term_, true), request_vote.candidate_id_);
+        else
+            send_message(RequestVoteResponse(request_vote.term_, false), request_vote.candidate_id_);
+    }
+    else if (log_[request_vote.last_log_index_].term_ < request_vote.last_log_term_)
+    {
+        send_message(RequestVoteResponse(request_vote.term_, true), request_vote.candidate_id_);
     }
     else
-    {
-        int node_last_term = log_[log_.size() - 1].term_;
-        if (this->state_ == state::LEADER && (this->voted_for_ == request_vote.candidate_id_ || this->voted_for_ == -1)
-            && (request_vote.last_log_term_ > node_last_term))
-            vote_granted = true;
-    }
-
-    RequestVoteResponse request_vote_response(this->current_term_, vote_granted);
-    send_message(request_vote_response, request_vote.candidate_id_);
+        send_message(RequestVoteResponse(request_vote.term_, false), request_vote.candidate_id_);
 }
+
 Node::~Node()
 {
     ofstream_.close();
