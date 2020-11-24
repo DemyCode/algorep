@@ -106,10 +106,15 @@ void receive_all_messages(size_t offset, size_t n_node, std::vector<RPCQuery>& q
         if (source_rank == ProcessInformation::instance().rank_)
             continue;
 
-        auto query = receive_message(source_rank, tag);
+        while (true)
+        {
+            auto query = receive_message(source_rank, tag);
 
-        if (query.has_value())
-            queries.emplace_back(query.value());
+            if (query.has_value())
+                queries.emplace_back(query.value());
+            else
+                break;
+        }
     }
 }
 
