@@ -6,17 +6,12 @@
 #include "mpi_classes/process-information.hh"
 #include "utils/clock.hh"
 
-void send_message(const RPC& rpc_message, size_t destination, MPI_Request& request, int tag)
-{
-    const auto& serialized_message = rpc_message.serialize();
-    MPI_Isend(
-        serialized_message.c_str(), serialized_message.size(), MPI_CHAR, destination, tag, MPI_COMM_WORLD, &request);
-}
-
 void send_message(const RPC& rpc_message, size_t destination, int tag)
 {
     MPI_Request request;
-    send_message(rpc_message, destination, request, tag);
+    const auto& serialized_message = rpc_message.serialize();
+    MPI_Isend(
+        serialized_message.c_str(), serialized_message.size(), MPI_CHAR, destination, tag, MPI_COMM_WORLD, &request);
     MPI_Request_free(&request);
 }
 

@@ -6,7 +6,6 @@
 #include "rpc-query.hh"
 #include "rpc.hh"
 
-void send_message(const RPC& rpc_message, size_t destination, MPI_Request& request, int tag = 0);
 void send_message(const RPC& rpc_message, size_t destination, int tag = 0);
 std::optional<RPCQuery> send_and_wait_message(const RPC& rpc_message, size_t destination, float timeout, int tag = 0);
 std::optional<RPCQuery> receive_message(size_t source, int tag = 0);
