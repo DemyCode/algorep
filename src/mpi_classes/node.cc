@@ -250,7 +250,6 @@ void Node::handle_request_vote(const RPCQuery &query) {
         send_message(RequestVoteResponse(current_term_, false), request_vote.candidate_id_);
         return;
     }
-    bool vote_granted = true;
     if (voted_for_ == -1) {
         if (log_[request_vote.last_log_index_].term_ == request_vote.last_log_term_) {
             if (request_vote.last_log_index_ > log_.size() - 1){

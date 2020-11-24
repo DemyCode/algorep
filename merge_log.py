@@ -11,7 +11,7 @@ if __name__ == '__main__':
     lines = [item for sublist in lines for item in sublist]
     lines = [(x.split(':')[0], x) for x in lines]
     lines.sort()
-    output = open('debug/debug_merged.txt', 'w')
+    output = open('debug/merged.txt', 'w')
     for line in lines:
         print(line[1], end='')
         output.write(line[1])
