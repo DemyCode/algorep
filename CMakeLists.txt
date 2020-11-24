@@ -16,7 +16,7 @@ endif()
 
 ############### COMPILATION FLAGS ###############
 # General compilation flags
-set(CMAKE_CXX_FLAGS "-pedantic -Werror -Wall -Wextra -std=c++17")
+set(CMAKE_CXX_FLAGS "-pedantic -Werror -Wall -Wextra -std=c++17 -DOMPI_SKIP_MPICXX")
 
 # Debug compilation flags
 set(CMAKE_CXX_FLAGS_DEBUG "-g3 -O0")

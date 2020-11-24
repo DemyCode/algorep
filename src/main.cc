@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
 
     if (rank == 0)
     {
-        std::cerr << "Start controller, rank: " << rank << std::flush;
+        std::cout << "Start controller, rank: " << rank << std::endl;
 
         // CONSOLE
         Controller controller;
@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
     }
     else if (rank <= n_client)
     {
-        std::cerr << "Start client, rank: " << rank << std::endl << std::flush;
+        std::cout << "Start client, rank: " << rank << std::endl;
 
         // CLIENT
         Client client;
@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        std::cerr << "Start server, rank: " << rank << std::endl << std::flush;
+        std::cout << "Start server, rank: " << rank << std::endl;
         // SERVER
         Node node = Node();
         node.run();

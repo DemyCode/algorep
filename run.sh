@@ -6,22 +6,17 @@ EXEC_NAME="raft"
 MIN_COMMAND_COUNT=10
 MAX_COMMAND_COUNT=100
 
-echo_error()
-{
-    >&2 echo "$@"
-}
-
 print_usage()
 {
     if [ $# -eq 1 ]; then
         echo "ERROR: $1"
     fi
 
-    echo_error "USAGE: ./run.sh client_count server_count generate_command_list [build_path]"
-    echo_error "  client_count: (int) number of client to create"
-    echo_error "  server_count: (int) number of server to create"
-    echo_error "  generate_command_list: (yes or no) if yes will generate a command list file for each client"
-    echo_error "  build_path: (path, optional) path to the directory containing the executable"
+    echo "USAGE: ./run.sh client_count server_count generate_command_list [build_path]"
+    echo "  client_count: (int) number of client to create"
+    echo "  server_count: (int) number of server to create"
+    echo "  generate_command_list: (yes or no) if yes will generate a command list file for each client"
+    echo "  build_path: (path, optional) path to the directory containing the executable"
     exit 1
 }
 
@@ -80,12 +75,12 @@ fi
 
 # Check the build path (location of the executable)
 if [ $# -lt 4 ]; then
-    echo_error "No build directory given, looking for one ..."
+    echo "No build directory given, looking for one ..."
 
     for path in $BUILD_DIRECTORY_LIST; do
         if [ -d "${path}" ] && [ -x "${path}/${EXEC_NAME}" ]; then
             build_path="${path}"
-            echo_error "Found path ${path}"
+            echo "Found path ${path}"
             break
         fi
     done
@@ -110,17 +105,17 @@ if [ "${generate_command_list}" = "yes" ] && [ "${client_count}" -gt 0 ]; then
     done
 fi
 
-echo_error "--------------------------------------------------------------------------"
-echo_error "Running with the following parameters:"
-echo_error "Client count: ${client_count}"
-echo_error "Server count: ${server_count}"
-echo_error "Command list: ${generate_command_list}"
+echo "--------------------------------------------------------------------------"
+echo "Running with the following parameters:"
+echo "Client count: ${client_count}"
+echo "Server count: ${server_count}"
+echo "Command list: ${generate_command_list}"
 if [ "${generate_command_list}" = "yes" ]; then
-    echo_error "Command list files:${command_list_files}"
+    echo "Command list files:${command_list_files}"
 fi
-echo_error ""
+echo ""
 
-mpirun -np ${total_size} ./"${build_path}/${EXEC_NAME}" "${client_count}" "${server_count}" ${command_list_files}
+mpirun -np ${total_size} --oversubscribe ./"${build_path}/${EXEC_NAME}" "${client_count}" "${server_count}" ${command_list_files}
 
 for command_list_file in ${command_list_files}; do
     rm "${command_list_file}"
