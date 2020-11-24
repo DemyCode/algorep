@@ -18,7 +18,7 @@ Controller::Controller()
 
 void Controller::print_help()
 {
-    std::cout
+    std::cerr
         << "Available commands:" << std::endl
         << " - help                              - print this message" << std::endl
         << " - list_ranks                        - print the list of ranks with the type of the process associated"
@@ -42,21 +42,21 @@ void Controller::list_ranks()
     int max_size = std::to_string(ProcessInformation::instance().size_ - 1).size();
     std::string separator(17 + max_size, '-');
 
-    std::cout << std::setfill(' ') << "Ranks:" << std::endl
+    std::cerr << std::setfill(' ') << "Ranks:" << std::endl
               << separator << std::endl
               << "| " << std::setw(max_size) << ProcessInformation::instance().rank_ << " | controller |" << std::endl;
 
     for (size_t client_rank = ProcessInformation::instance().client_offset_;
          client_rank < ProcessInformation::instance().client_offset_ + ProcessInformation::instance().n_client_;
          client_rank++)
-        std::cout << "| " << std::setw(max_size) << client_rank << " |   client   |" << std::endl;
+        std::cerr << "| " << std::setw(max_size) << client_rank << " |   client   |" << std::endl;
 
     for (size_t server_rank = ProcessInformation::instance().node_offset_;
          server_rank < ProcessInformation::instance().node_offset_ + ProcessInformation::instance().n_node_;
          server_rank++)
-        std::cout << "| " << std::setw(max_size) << server_rank << " |   server   |" << std::endl;
+        std::cerr << "| " << std::setw(max_size) << server_rank << " |   server   |" << std::endl;
 
-    std::cout << separator << std::endl << std::resetiosflags(std::ios::showbase);
+    std::cerr << separator << std::endl << std::resetiosflags(std::ios::showbase);
 }
 
 void Controller::send_message(int destination_rank,
@@ -67,21 +67,21 @@ void Controller::send_message(int destination_rank,
     const auto& query = send_and_wait_message(message, destination_rank, this->timeout_);
 
     if (!query.has_value())
-        std::cout << "Error when trying to send the message, please try again" << std::endl;
+        std::cerr << "Error when trying to send the message, please try again" << std::endl;
 }
 
 void Controller::handle_entry(const std::vector<std::string>& tokens, const std::string& line)
 {
     if (tokens.size() <= 2)
     {
-        std::cout << "Invalid arguments" << std::endl;
+        std::cerr << "Invalid arguments" << std::endl;
         return;
     }
 
     int destination_rank = parse_int(tokens[1]);
     if (!ProcessInformation::instance().is_rank_client(destination_rank))
     {
-        std::cout << "Invalid rank: " << tokens[1] << std::endl;
+        std::cerr << "Invalid rank: " << tokens[1] << std::endl;
         return;
     }
 
@@ -98,7 +98,7 @@ void Controller::handle_set_speed(const std::vector<std::string>& tokens)
 {
     if (tokens.size() != 3)
     {
-        std::cout << "Invalid arguments" << std::endl;
+        std::cerr << "Invalid arguments" << std::endl;
         return;
     }
 
@@ -106,14 +106,14 @@ void Controller::handle_set_speed(const std::vector<std::string>& tokens)
     if (!ProcessInformation::instance().is_rank_client(destination_rank)
         && !ProcessInformation::instance().is_rank_node(destination_rank))
     {
-        std::cout << "Invalid rank: " << tokens[1] << std::endl;
+        std::cerr << "Invalid rank: " << tokens[1] << std::endl;
         return;
     }
 
     const auto& speed = tokens[2];
     if (speed != "low" && speed != "medium" && speed != "high")
     {
-        std::cout << "Invalid speed: " << tokens[2] << std::endl;
+        std::cerr << "Invalid speed: " << tokens[2] << std::endl;
         return;
     }
 
@@ -124,7 +124,7 @@ void Controller::handle_crash(const std::vector<std::string>& tokens)
 {
     if (tokens.size() <= 1)
     {
-        std::cout << "Missing arguments" << std::endl;
+        std::cerr << "Missing arguments" << std::endl;
         return;
     }
 
@@ -132,7 +132,7 @@ void Controller::handle_crash(const std::vector<std::string>& tokens)
     if (!ProcessInformation::instance().is_rank_client(destination_rank)
         && !ProcessInformation::instance().is_rank_node(destination_rank))
     {
-        std::cout << "Invalid rank: " << tokens[1] << std::endl;
+        std::cerr << "Invalid rank: " << tokens[1] << std::endl;
         return;
     }
 
@@ -143,14 +143,14 @@ void Controller::handle_start(const std::vector<std::string>& tokens)
 {
     if (tokens.size() <= 1)
     {
-        std::cout << "Missing arguments" << std::endl;
+        std::cerr << "Missing arguments" << std::endl;
         return;
     }
 
     int destination_rank = parse_int(tokens[1]);
     if (!ProcessInformation::instance().is_rank_client(destination_rank))
     {
-        std::cout << "Invalid rank: " << tokens[1] << std::endl;
+        std::cerr << "Invalid rank: " << tokens[1] << std::endl;
         return;
     }
 
@@ -161,7 +161,7 @@ void Controller::handle_recover(const std::vector<std::string>& tokens)
 {
     if (tokens.size() <= 1)
     {
-        std::cout << "Missing arguments" << std::endl;
+        std::cerr << "Missing arguments" << std::endl;
         return;
     }
 
@@ -169,7 +169,7 @@ void Controller::handle_recover(const std::vector<std::string>& tokens)
     if (!ProcessInformation::instance().is_rank_client(destination_rank)
         && !ProcessInformation::instance().is_rank_node(destination_rank))
     {
-        std::cout << "Invalid rank: " << tokens[1] << std::endl;
+        std::cerr << "Invalid rank: " << tokens[1] << std::endl;
         return;
     }
 
@@ -180,7 +180,7 @@ void Controller::handle_stop(const std::vector<std::string>& tokens)
 {
     if (tokens.size() <= 1)
     {
-        std::cout << "Missing arguments" << std::endl;
+        std::cerr << "Missing arguments" << std::endl;
         return;
     }
 
@@ -188,7 +188,7 @@ void Controller::handle_stop(const std::vector<std::string>& tokens)
     if (!ProcessInformation::instance().is_rank_client(destination_rank)
         && !ProcessInformation::instance().is_rank_node(destination_rank))
     {
-        std::cout << "Invalid rank: " << tokens[1] << std::endl;
+        std::cerr << "Invalid rank: " << tokens[1] << std::endl;
         return;
     }
 
@@ -199,14 +199,14 @@ void Controller::handle_wait_finish(const std::vector<std::string>& tokens)
 {
     if (tokens.size() <= 1)
     {
-        std::cout << "Missing arguments" << std::endl;
+        std::cerr << "Missing arguments" << std::endl;
         return;
     }
 
     int destination_rank = parse_int(tokens[1]);
     if (!ProcessInformation::instance().is_rank_client(destination_rank))
     {
-        std::cout << "Invalid rank: " << tokens[1] << std::endl;
+        std::cerr << "Invalid rank: " << tokens[1] << std::endl;
         return;
     }
 
@@ -218,14 +218,14 @@ void Controller::handle_get_state(const std::vector<std::string>& tokens) const
 {
     if (tokens.size() <= 1)
     {
-        std::cout << "Missing arguments" << std::endl;
+        std::cerr << "Missing arguments" << std::endl;
         return;
     }
 
     int destination_rank = parse_int(tokens[1]);
     if (!ProcessInformation::instance().is_rank_node(destination_rank))
     {
-        std::cout << "Invalid rank: " << tokens[1] << std::endl;
+        std::cerr << "Invalid rank: " << tokens[1] << std::endl;
         return;
     }
 
@@ -257,21 +257,21 @@ void Controller::handle_get_state(const std::vector<std::string>& tokens) const
         }
     }
 
-    std::cout << "Status " << destination_rank << ": " << status << std::endl;
+    std::cerr << "Status " << destination_rank << ": " << status << std::endl;
 }
 
 void Controller::handle_sleep(const std::vector<std::string>& tokens)
 {
     if (tokens.size() <= 1)
     {
-        std::cout << "Missing arguments" << std::endl;
+        std::cerr << "Missing arguments" << std::endl;
         return;
     }
 
     int milliseconds = parse_int(tokens[1]);
     if (milliseconds < 0)
     {
-        std::cout << "Invalid milliseconds, must be a positive integer: " << tokens[1] << std::endl;
+        std::cerr << "Invalid milliseconds, must be a positive integer: " << tokens[1] << std::endl;
         return;
     }
 
@@ -282,14 +282,14 @@ void Controller::handle_timeout(const std::vector<std::string>& tokens)
 {
     if (tokens.size() <= 1)
     {
-        std::cout << "Missing arguments" << std::endl;
+        std::cerr << "Missing arguments" << std::endl;
         return;
     }
 
     int destination_rank = parse_int(tokens[1]);
     if (!ProcessInformation::instance().is_rank_node(destination_rank))
     {
-        std::cout << "Invalid rank: " << tokens[1] << std::endl;
+        std::cerr << "Invalid rank: " << tokens[1] << std::endl;
         return;
     }
 
@@ -298,7 +298,7 @@ void Controller::handle_timeout(const std::vector<std::string>& tokens)
 
 void Controller::run()
 {
-    std::cerr << "> ";
+    std::cout << "> ";
 
     for (std::string line; std::getline(std::cin, line);)
     {
@@ -333,11 +333,11 @@ void Controller::run()
                 handle_sleep(tokens);
             else
             {
-                std::cout << "Command not found: " << tokens[0] << std::endl;
+                std::cerr << "Command not found: " << tokens[0] << std::endl;
                 print_help();
             }
         }
 
-        std::cerr << "> ";
+        std::cout << "> ";
     }
 }
