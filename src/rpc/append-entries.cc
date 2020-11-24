@@ -4,10 +4,10 @@
 
 AppendEntries::AppendEntries(int term,
                              size_t leader_id,
-                             size_t prev_log_index,
+                             int prev_log_index,
                              int prev_log_term,
                              std::vector<Entry> entries,
-                             size_t leader_commit)
+                             int leader_commit)
     : RPC(term, RPC::RPC_TYPE::APPEND_ENTRIES)
     , leader_id_(leader_id)
     , prev_log_index_(prev_log_index)
@@ -40,8 +40,9 @@ RPC::json AppendEntries::serialize_message() const
     json_object["prev_log_index"] = this->prev_log_index_;
     json_object["prev_log_term"] = this->prev_log_term_;
 
+    json_object["entries"] = json::array();
     for (auto& entry : this->entries_)
-        json_object["entries"].emplace_back(entry.serialize_message());
+        json_object["entries"].push_back(entry.serialize_message());
 
     json_object["leader_commit"] = this->leader_commit_;
 

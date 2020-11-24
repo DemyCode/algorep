@@ -5,32 +5,35 @@
 #include "mpi_classes/process-information.hh"
 
 Node::Node()
-        : state_(state_t::FOLLOWER),
-          election_timeout_(),
-          clock_(),
-          debug_clock_(),
-          vote_count_(0),
-          new_entries_(),
-          current_term_(0),
-          voted_for_(0),
-          log_(), // TODO see initialization
-          commit_index_(-1),
-          last_applied_(-1),
-          next_index_(ProcessInformation::instance().n_node_) // TODO see initialization
-        , match_index_(ProcessInformation::instance().n_node_, 0) {
+    : state_(state_t::FOLLOWER)
+    , election_timeout_()
+    , clock_()
+    , debug_clock_()
+    , vote_count_(0)
+    , new_entries_()
+    , current_term_(0)
+    , voted_for_(0)
+    , log_()
+    , commit_index_(-1)
+    , last_applied_(-1)
+    , next_index_(ProcessInformation::instance().n_node_, 0)
+    , match_index_(ProcessInformation::instance().n_node_, 0)
+{
     this->convert_to_follower();
 }
 
-void Node::set_election_timeout() {
+void Node::set_election_timeout()
+{
     std::srand(std::time(nullptr) + ProcessInformation::instance().rank_);
-    this->election_timeout_ = (float) (std::rand() % 150) + 150;
+    this->election_timeout_ = (float)(std::rand() % 150) + 150;
 }
 
-void Node::run() {
+void Node::run()
+{
     bool running = true;
-    debug_write("Node " + std::to_string(ProcessInformation::instance().rank_) + " is running",
-                debug_clock_.check());
-    while (running) {
+    debug_write("Node " + std::to_string(ProcessInformation::instance().rank_) + " is running", debug_clock_.check());
+    while (running)
+    {
         Clock::wait(1);
         std::vector<RPCQuery> queries;
         // Listen to everything
@@ -54,7 +57,8 @@ void Node::run() {
     return;
 }
 
-void Node::convert_to_candidate() {
+void Node::convert_to_candidate()
+{
     // TODO IMPLEMENTATION NEEDS BE DONE
     // THIS SECTION REFERS TO : RULES FOR SERVER -> CANDIDATES -> ON CONVERSION TO CANDIDATE, START ELECTION
     // THIS FUNCTION ONLY COVERS THE FIRST POINT THE THREE OTHERS ARE HANDLED THROUGH PROBING
@@ -66,90 +70,107 @@ void Node::convert_to_candidate() {
     this->current_term_ += 1;
     this->clock_.reset();
     int last_log_term = -1;
-    if (log_.size() != 0)
-        last_log_term = log_[log_.size() - 1].term_;
-    send_to_all(ProcessInformation::instance().node_offset_, ProcessInformation::instance().n_node_,
-                RequestVote(current_term_, ProcessInformation::instance().rank_, log_.size() - 1,
-                            last_log_term));
+    if (!log_.empty())
+        last_log_term = log_.at(log_.size() - 1).term_;
+    send_to_all(ProcessInformation::instance().node_offset_,
+                ProcessInformation::instance().n_node_,
+                RequestVote(current_term_, ProcessInformation::instance().rank_, log_.size() - 1, last_log_term));
     this->set_election_timeout();
 }
 
-void Node::all_server_check(const std::vector<RPCQuery> &queries) {
+void Node::all_server_check(const std::vector<RPCQuery>& queries)
+{
     // THIS SECTION REFER TO THE PART : RULES FOR SERVER -> ALL RULES
-    if (this->commit_index_ > this->last_applied_) {
+    if (this->commit_index_ > this->last_applied_)
+    {
         last_applied_ += 1;
         std::ofstream log_file("log" + std::to_string(ProcessInformation::instance().rank_) + ".txt");
-        if (log_file.is_open()) {
-            log_file << log_[last_applied_].command_ << std::endl;
+        if (log_file.is_open())
+        {
+            log_file << log_.at(last_applied_).command_ << std::endl;
             log_file.close();
-        } else
+        }
+        else
             std::cerr << "Unable to open file : "
                       << "log" + std::to_string(ProcessInformation::instance().rank_) + ".txt" << std::endl;
-        if (this->state_ == state_t::LEADER) {
+        if (this->state_ == state_t::LEADER)
+        {
             RPCQuery entry_query = this->new_entries_.front();
             send_message(NewEntryResponse(true), entry_query.source_rank_);
             this->new_entries_.pop();
         }
     }
 
-    for (const auto &query : queries) {
-        if (query.term_ > current_term_) {
+    for (const auto& query : queries)
+    {
+        if (query.term_ > current_term_)
+        {
             current_term_ = query.term_;
             convert_to_follower();
         }
+        if (query.type_ == RPC::RPC_TYPE::APPEND_ENTRIES)
+            handle_append_entries(query);
+        if (query.type_ == RPC::RPC_TYPE::REQUEST_VOTE)
+            handle_request_vote(query);
     }
 }
 
-void Node::follower_check(const std::vector<RPCQuery> &queries) {
+void Node::follower_check(const std::vector<RPCQuery>& queries)
+{
     // TODO
-    for (const auto &query : queries) {
-        if (query.type_ == RPC::RPC_TYPE::REQUEST_VOTE)
-            this->handle_request_vote(query);
-        if (query.type_ == RPC::RPC_TYPE::APPEND_ENTRIES)
-            this->handle_append_entries(query);
-    }
+    (void)queries;
     if (this->clock_.check() > election_timeout_)
         convert_to_candidate();
 }
 
-std::vector<Entry> slice_vector(std::vector<Entry> vect, int begin) {
+std::vector<Entry> slice_vector(std::vector<Entry> vect, int begin)
+{
     std::vector<Entry> res_vector = std::vector<Entry>();
     for (size_t i = begin; i < vect.size(); i++)
-        res_vector.push_back(vect[i]);
+        res_vector.push_back(vect.at(i));
     return res_vector;
 }
 
-void Node::leader_check(const std::vector<RPCQuery> &queries) {
-    if (this->clock_.check() < election_timeout_ / 2) {
-        for (size_t i = 0; i < next_index_.size(); i++) {
+void Node::leader_check(const std::vector<RPCQuery>& queries)
+{
+    if (clock_.check() > 30.0f)
+    {
+        debug_write("sending heartbeat", debug_clock_.check());
+        for (size_t i = 0; i < next_index_.size(); i++)
+        {
             if (i == ProcessInformation::instance().rank_)
                 continue;
-            // if ((int) this->log_.size() - 1 >= next_index_[i])
+            if ((int)this->log_.size() - 1 >= next_index_.at(i))
             {
                 // send AppendEntries RPC with log entries starting at nextIndex
-                AppendEntries append_entries(this->current_term_,
-                                             ProcessInformation::instance().rank_,
-                                             next_index_.at(i) - 1,
-                                             log_.at(next_index_.at(i) - 1).term_,
-                                             slice_vector(log_, next_index_[i]),
-                                             this->commit_index_);
-                send_message(append_entries, i + ProcessInformation::instance().node_offset_);
+                AppendEntries append_entry = AppendEntries(this->current_term_,
+                                                           ProcessInformation::instance().rank_,
+                                                           next_index_.at(i) - 1,
+                                                           log_.at(next_index_.at(i) - 1).term_,
+                                                           slice_vector(log_, next_index_.at(i)),
+                                                           this->commit_index_);
+                send_message(append_entry, i + ProcessInformation::instance().node_offset_);
+            }
+            else
+            {
+                AppendEntries empty_append =
+                    AppendEntries(this->current_term_,
+                                  ProcessInformation::instance().rank_,
+                                  -1,
+                                  -1,
+                                  std::vector<Entry>(), // empty entries means heartbeat in response
+                                  this->commit_index_);
+                send_message(empty_append, i + ProcessInformation::instance().node_offset_);
             }
         }
-        /*AppendEntries empty_append = AppendEntries(this->current_term_,
-                                                   ProcessInformation::instance().rank_,
-                                                   this->log_.size() - 1,
-                                                   log_[this->log_.size() - 1].term_,
-                                                   std::vector<Entry>(), // empty entries means heartbeat in response
-                                                   this->commit_index_);
-        send_to_all(
-                ProcessInformation::instance().node_offset_, ProcessInformation::instance().n_node_, empty_append, 0);*/
         clock_.reset();
     }
 
-    for (const auto &query : queries) {
+    for (const auto& query : queries)
+    {
         // FIXED COMMAND is probably RPC::RPC_TYPE::NEW_ENTRY
-        if (query.type_ == RPC::RPC_TYPE::NEW_ENTRY) {
+        if (query.type_ == RPC::RPC_TYPE::NEW_ENTRY)
+        {
             NewEntry new_entry = std::get<NewEntry>(query.content_);
             Entry res_entry = Entry(this->current_term_, new_entry.entry_.command_);
             this->log_.push_back(res_entry);
@@ -158,38 +179,48 @@ void Node::leader_check(const std::vector<RPCQuery> &queries) {
             // See all_server_check
         }
 
-        if (query.type_ == RPC::RPC_TYPE::APPEND_ENTRIES_RESPONSE) {
+        if (query.type_ == RPC::RPC_TYPE::APPEND_ENTRIES_RESPONSE)
+        {
             auto aer = std::get<AppendEntriesResponse>(query.content_);
-            if (aer.success_) {
-                next_index_[query.source_rank_] = next_index_[query.source_rank_] + 1;
-                match_index_[query.source_rank_] = match_index_[query.source_rank_] + 1;
-            } else
-                next_index_[query.source_rank_] = next_index_[query.source_rank_] - 1;
+            if (aer.success_)
+            {
+                next_index_.at(query.source_rank_ - ProcessInformation::instance().node_offset_) += 1;
+                match_index_.at(query.source_rank_ - ProcessInformation::instance().node_offset_) += 1;
+            }
+            else
+                next_index_.at(query.source_rank_ - ProcessInformation::instance().node_offset_) -= 1;
         }
     }
 
     int N = commit_index_ + 1;
     size_t majority = 1;
-    for (int index_i : match_index_) {
+    for (int index_i : match_index_)
+    {
         if (index_i >= N)
             majority += 1;
     }
-    if (N > commit_index_ && majority >= ProcessInformation::instance().n_node_ / 2 && log_[N].term_ == current_term_)
+    if (N > commit_index_ && majority >= ProcessInformation::instance().n_node_ / 2
+        && log_.at(N).term_ == current_term_)
         commit_index_ = N;
 }
 
-void Node::candidate_check(const std::vector<RPCQuery> &queries) {
-    for (const auto &query : queries) {
-        if (query.type_ == RPC::RPC_TYPE::REQUEST_VOTE_RESPONSE) {
+void Node::candidate_check(const std::vector<RPCQuery>& queries)
+{
+    for (const auto& query : queries)
+    {
+        if (query.type_ == RPC::RPC_TYPE::REQUEST_VOTE_RESPONSE)
+        {
             RequestVoteResponse request_vote_response = std::get<RequestVoteResponse>(query.content_);
             vote_count_ += request_vote_response.vote_granted_ ? 1 : 0;
-            debug_write("Node " + std::to_string(ProcessInformation::instance().rank_) + " has " +
-                        std::to_string(vote_count_) + " vote.", debug_clock_.check());
+            debug_write("Node " + std::to_string(ProcessInformation::instance().rank_) + " has "
+                            + std::to_string(vote_count_) + " vote.",
+                        debug_clock_.check());
         }
-        if (query.type_ == RPC::RPC_TYPE::APPEND_ENTRIES) {
+        if (query.type_ == RPC::RPC_TYPE::APPEND_ENTRIES)
+        {
             AppendEntries append_entries = std::get<AppendEntries>(query.content_);
-            if (append_entries.term_ > current_term_)
-                this->state_ = state_t::FOLLOWER;
+            if (append_entries.term_ >= current_term_)
+                convert_to_follower();
         }
     }
     if (vote_count_ > ProcessInformation::instance().n_node_ / 2)
@@ -198,60 +229,81 @@ void Node::candidate_check(const std::vector<RPCQuery> &queries) {
         convert_to_candidate();
 }
 
-void Node::convert_to_leader() {
+void Node::convert_to_leader()
+{
     debug_write("Node " + std::to_string(ProcessInformation::instance().rank_) + " became leader.",
                 debug_clock_.check());
     this->state_ = state_t::LEADER;
     this->clock_.reset();
     // Envoyer heartbeat à tous les serveurs
-    AppendEntries empty_append = AppendEntries(this->current_term_,
-                                               ProcessInformation::instance().rank_,
-                                               69,
-                                               42,
-                                               std::vector<Entry>(), // empty entries means heartbeat in response
-                                               this->commit_index_);
+    for (size_t i = 0; i < ProcessInformation::instance().n_node_; i++)
+    {
+        this->next_index_.at(i) = this->log_.size();
+        this->match_index_.at(i) = -1;
+    }
+    AppendEntries empty_append = AppendEntries(
+        this->current_term_, ProcessInformation::instance().rank_, -1, -1, std::vector<Entry>(), this->commit_index_);
     send_to_all(ProcessInformation::instance().node_offset_, ProcessInformation::instance().n_node_, empty_append, 0);
-    this->next_index_ = std::vector<int>(ProcessInformation::instance().n_node_, this->log_.size());
-    this->match_index_ = std::vector<int>(ProcessInformation::instance().n_node_, 0);
 }
 
-void Node::handle_append_entries(const RPCQuery &query) {
+void Node::handle_append_entries(const RPCQuery& query)
+{
+    debug_write("Node " + std::to_string(ProcessInformation::instance().rank_) + " handles AERPC",
+                debug_clock_.check());
     AppendEntries append_entries = std::get<AppendEntries>(query.content_);
+
     // 1 & 2
-    if (append_entries.term_ < current_term_) {
+    if (append_entries.term_ < current_term_)
+    {
         auto append_entries_response = AppendEntriesResponse(current_term_, false);
         send_message(append_entries_response, append_entries.leader_id_);
+        return;
     }
 
-    if (this->log_[append_entries.prev_log_index_].term_ != append_entries.prev_log_term_) {
+    if (append_entries.entries_.empty())
+    {
+        this->clock_.reset();
+        return;
+    }
+
+    if (this->log_.at(append_entries.prev_log_index_).term_ != append_entries.prev_log_term_)
+    {
         auto append_entries_response = AppendEntriesResponse(append_entries.term_, false);
         send_message(append_entries_response, append_entries.leader_id_);
+        return;
     }
 
+    send_message(AppendEntriesResponse(append_entries.term_, true), append_entries.leader_id_);
+    this->clock_.reset();
+
     std::vector<Entry> new_log = std::vector<Entry>();
-    size_t i = 0;
+    int i = 0;
     for (; i < append_entries.prev_log_index_ + 1; i++)
-        new_log.push_back(log_[i]);
+        new_log.push_back(log_.at(i));
 
     // 3 & 4.
-    for (; i < append_entries.entries_.size() + (append_entries.prev_log_index_ + 1); i++) {
-        if (log_[i].term_ != append_entries.entries_[i - (append_entries.prev_log_index_ + 1)].term_)
+    for (; i < (int)append_entries.entries_.size() + (append_entries.prev_log_index_ + 1); i++)
+    {
+        if (log_.at(i).term_ != append_entries.entries_.at(i - (append_entries.prev_log_index_ + 1)).term_)
             break;
-        new_log.push_back(append_entries.entries_[append_entries.prev_log_index_ + i]);
+        new_log.push_back(append_entries.entries_.at(append_entries.prev_log_index_ + i));
     }
     log_ = new_log;
     // 5.
     if (append_entries.leader_commit_ > commit_index_)
-        commit_index_ = std::min(append_entries.leader_commit_, (int) append_entries.entries_.size() - 1);
+        commit_index_ = std::min(append_entries.leader_commit_, (int)append_entries.entries_.size() - 1);
 }
 
-void Node::handle_request_vote(const RPCQuery &query) {
+void Node::handle_request_vote(const RPCQuery& query)
+{
     RequestVote request_vote = std::get<RequestVote>(query.content_);
-    if (request_vote.term_ < current_term_) {
+    if (request_vote.term_ < current_term_)
+    {
         send_message(RequestVoteResponse(current_term_, false), request_vote.candidate_id_);
         return;
     }
-    if (voted_for_ == -1) {
+    if (voted_for_ == -1)
+    {
         if (request_vote.last_log_index_ == -1)
         {
             send_message(RequestVoteResponse(request_vote.term_, true), request_vote.candidate_id_);
@@ -259,27 +311,36 @@ void Node::handle_request_vote(const RPCQuery &query) {
             return;
         }
 
-        if (log_[request_vote.last_log_index_].term_ == request_vote.last_log_term_) {
-            if (request_vote.last_log_index_ > (int)log_.size() - 1){
+        if (log_.at(request_vote.last_log_index_).term_ == request_vote.last_log_term_)
+        {
+            if (request_vote.last_log_index_ > (int)log_.size() - 1)
+            {
                 send_message(RequestVoteResponse(request_vote.term_, true), request_vote.candidate_id_);
                 this->voted_for_ = request_vote.candidate_id_;
             }
             else
                 send_message(RequestVoteResponse(request_vote.term_, false), request_vote.candidate_id_);
-        } else if (log_[request_vote.last_log_index_].term_ < request_vote.last_log_term_) {
+        }
+        else if (log_.at(request_vote.last_log_index_).term_ < request_vote.last_log_term_)
+        {
             this->voted_for_ = request_vote.candidate_id_;
             send_message(RequestVoteResponse(request_vote.term_, true), request_vote.candidate_id_);
-        } else
+        }
+        else
             send_message(RequestVoteResponse(request_vote.term_, false), request_vote.candidate_id_);
-    } else
+    }
+    else
         send_message(RequestVoteResponse(request_vote.term_, false), request_vote.candidate_id_);
 }
 
-void Node::convert_to_follower() {
+void Node::convert_to_follower()
+{
     this->state_ = state_t::FOLLOWER;
     this->voted_for_ = -1;
+    this->vote_count_ = 0;
     this->clock_.reset();
     this->set_election_timeout();
-    debug_write("Node " + std::to_string(ProcessInformation::instance().rank_) + " became follower.",
+    debug_write("Node " + std::to_string(ProcessInformation::instance().rank_) + " = follower ; election_timeout "
+                    + std::to_string(this->election_timeout_),
                 debug_clock_.check());
 }

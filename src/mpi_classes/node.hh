@@ -57,7 +57,7 @@ private:
     // Persistent on all servers (updated on stable storage before responding to RPCs)
 
     // latest term server has seen (initialized to 0 on first boot, increases monotonically)
-    size_t current_term_;
+    int current_term_;
     //  candidate_id that received vote in current term (or 0 if none)
     int voted_for_;
     // log entries; each entry contains command for state machine, and term when entry was received by leader (first

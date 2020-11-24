@@ -1,12 +1,18 @@
 #include <fstream>
 #include <iostream>
 #include <mpi.h>
+#include <cstdlib>
 
 #include "mpi_classes/client.hh"
 #include "mpi_classes/controller.hh"
 #include "mpi_classes/node.hh"
 #include "mpi_classes/process-information.hh"
 #include "utils/string_utils.hh"
+
+void exit()
+{
+    MPI_Finalize();
+}
 
 int main(int argc, char* argv[])
 {
@@ -56,6 +62,7 @@ int main(int argc, char* argv[])
     int size;
 
     MPI_Init(&argc, &argv);
+    std::atexit(exit);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
@@ -95,7 +102,7 @@ int main(int argc, char* argv[])
     {
         std::cerr << "Start server, rank: " << rank << std::endl << std::flush;
         // SERVER
-        Node node;
+        Node node = Node();
         node.run();
     }
 

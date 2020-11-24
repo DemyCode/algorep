@@ -30,6 +30,6 @@ public:
 
     const size_t source_rank_;
     const RPC::RPC_TYPE type_;
-    const size_t term_;
+    const int term_;
     const content_t content_;
 };
