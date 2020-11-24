@@ -93,8 +93,7 @@ int main(int argc, char* argv[])
         std::cerr << "Start server, rank: " << rank << std::endl;
 
         // SERVER
-        int offset = n_client + 1;
-        Node node(rank, n_node, offset, size);
+        Node node;
         node.run();
     }
 

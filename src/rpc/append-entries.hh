@@ -11,26 +11,26 @@ class AppendEntries : public RPC
 {
 public:
     AppendEntries(int term,
-                  int leader_id,
-                  int prev_log_index,
+                  size_t leader_id,
+                  size_t prev_log_index,
                   int prev_log_term,
                   std::vector<Entry> entries,
-                  int leader_commit);
+                  size_t leader_commit);
     AppendEntries(int term, const json& serialized_json);
     AppendEntries(int term, const std::string& serialized);
 
     json serialize_message() const override;
 
     // so follower can redirect clients
-    const int leader_id_;
+    const size_t leader_id_;
     // index of log entry immediately preceding new ones
-    const int prev_log_index_;
+    const size_t prev_log_index_;
     // term of prev_log_index entry
     const int prev_log_term_;
     // log entries to store (empty for heartbeat may send more than one for efficiency)
     std::vector<Entry> entries_;
     // leader's commit_index
-    const int leader_commit_;
+    const size_t leader_commit_;
 };
 
 class AppendEntriesResponse : public RPC

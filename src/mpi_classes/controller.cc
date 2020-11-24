@@ -45,12 +45,12 @@ void Controller::list_ranks()
               << separator << std::endl
               << "| " << std::setw(max_size) << ProcessInformation::instance().rank_ << " | controller |" << std::endl;
 
-    for (int client_rank = ProcessInformation::instance().client_offset_;
+    for (size_t client_rank = ProcessInformation::instance().client_offset_;
          client_rank < ProcessInformation::instance().client_offset_ + ProcessInformation::instance().n_client_;
          client_rank++)
         std::cout << "| " << std::setw(max_size) << client_rank << " |   client   |" << std::endl;
 
-    for (int server_rank = ProcessInformation::instance().node_offset_;
+    for (size_t server_rank = ProcessInformation::instance().node_offset_;
          server_rank < ProcessInformation::instance().node_offset_ + ProcessInformation::instance().n_node_;
          server_rank++)
         std::cout << "| " << std::setw(max_size) << server_rank << " |   server   |" << std::endl;

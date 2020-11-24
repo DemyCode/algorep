@@ -15,7 +15,7 @@ Client::Client()
     , speed_(Message::SPEED_TYPE::HIGH)
     , start_(false)
     , stop_(false)
-    , leader_(-1)
+    , leader_(0)
     , leader_search_clock_()
     , entries_to_send_()
     , entry_sent_(true)
@@ -50,7 +50,7 @@ void Client::run()
             continue;
 
         // Search for leader or send next entry
-        if (this->leader_ == -1)
+        if (this->leader_ == 0)
             this->search_leader();
         else if (this->entry_sent_)
             this->send_next_entry();
@@ -127,7 +127,7 @@ void Client::handle_search_leader_response(const RPCQuery& query)
 {
     const auto& search_leader_response = std::get<SearchLeaderResponse>(query.content_);
 
-    if (this->leader_ == -1)
+    if (this->leader_ == 0)
         this->leader_ = search_leader_response.new_leader_;
 }
 
@@ -180,10 +180,10 @@ void Client::check_timeout()
 
 void Client::reset_leader()
 {
-    if (this->leader_ == -1)
+    if (this->leader_ == 0)
         return;
 
-    this->leader_ = -1;
+    this->leader_ = 0;
     this->leader_search_clock_.reset();
 }
 

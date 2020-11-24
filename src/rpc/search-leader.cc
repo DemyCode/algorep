@@ -1,6 +1,6 @@
 #include "search-leader.hh"
 
-SearchLeader::SearchLeader(int old_leader)
+SearchLeader::SearchLeader(size_t old_leader)
     : RPC(-1, RPC::RPC_TYPE::SEARCH_LEADER)
     , old_leader_(old_leader)
 {}
@@ -22,7 +22,7 @@ RPC::json SearchLeader::serialize_message() const
     return json_object;
 }
 
-SearchLeaderResponse::SearchLeaderResponse(int new_leader)
+SearchLeaderResponse::SearchLeaderResponse(size_t new_leader)
     : RPC(-1, RPC::RPC_TYPE::SEARCH_LEADER_RESPONSE)
     , new_leader_(new_leader)
 {}

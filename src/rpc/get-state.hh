@@ -11,7 +11,7 @@ public:
 
     json serialize_message() const override;
 
-    const int process_rank_;
+    const size_t process_rank_;
 };
 
 class GetStateResponse : public RPC

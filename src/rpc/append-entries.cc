@@ -3,11 +3,11 @@
 #include <utility>
 
 AppendEntries::AppendEntries(int term,
-                             int leader_id,
-                             int prev_log_index,
+                             size_t leader_id,
+                             size_t prev_log_index,
                              int prev_log_term,
                              std::vector<Entry> entries,
-                             int leader_commit)
+                             size_t leader_commit)
     : RPC(term, RPC::RPC_TYPE::APPEND_ENTRIES)
     , leader_id_(leader_id)
     , prev_log_index_(prev_log_index)

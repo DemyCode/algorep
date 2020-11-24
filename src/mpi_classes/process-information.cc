@@ -1,11 +1,11 @@
 #include "process-information.hh"
 
-void ProcessInformation::set_information(int rank,
-                                         int n_client,
-                                         int client_offset,
-                                         int n_node,
-                                         int node_offset,
-                                         int size)
+void ProcessInformation::set_information(size_t rank,
+                                         size_t n_client,
+                                         size_t client_offset,
+                                         size_t n_node,
+                                         size_t node_offset,
+                                         size_t size)
 {
     this->rank_ = rank;
     this->n_client_ = n_client;
@@ -15,12 +15,12 @@ void ProcessInformation::set_information(int rank,
     this->size_ = size;
 }
 
-bool ProcessInformation::is_rank_client(int rank) const
+bool ProcessInformation::is_rank_client(size_t rank) const
 {
     return rank >= this->client_offset_ && rank < this->client_offset_ + this->n_client_;
 }
 
-bool ProcessInformation::is_rank_node(int rank) const
+bool ProcessInformation::is_rank_node(size_t rank) const
 {
     return rank >= this->node_offset_ && rank < this->node_offset_ + this->n_node_;
 }

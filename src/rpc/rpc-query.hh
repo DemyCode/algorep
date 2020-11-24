@@ -26,9 +26,9 @@ public:
                                    GetState,
                                    GetStateResponse>;
 
-    RPCQuery(int source_rank, RPC::RPC_TYPE type, int term, content_t content);
+    RPCQuery(size_t source_rank, RPC::RPC_TYPE type, int term, content_t content);
 
-    const int source_rank_;
+    const size_t source_rank_;
     const RPC::RPC_TYPE type_;
     const int term_;
     const content_t content_;

@@ -1,6 +1,6 @@
 #include "request-vote.hh"
 
-RequestVote::RequestVote(int term, int candidate_id, int last_log_index, int last_log_term)
+RequestVote::RequestVote(int term, size_t candidate_id, size_t last_log_index, int last_log_term)
     : RPC(term, RPC::RPC_TYPE::REQUEST_VOTE)
     , candidate_id_(candidate_id)
     , last_log_index_(last_log_index)

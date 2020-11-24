@@ -6,27 +6,27 @@
 #include "mpi_classes/process-information.hh"
 #include "utils/clock.hh"
 
-void send_message(const RPC& rpc_message, int destination, MPI_Request& request, int tag)
+void send_message(const RPC& rpc_message, size_t destination, MPI_Request& request, int tag)
 {
     const auto& serialized_message = rpc_message.serialize();
     MPI_Isend(
         serialized_message.c_str(), serialized_message.size(), MPI_CHAR, destination, tag, MPI_COMM_WORLD, &request);
 }
 
-void send_message(const RPC& rpc_message, int destination, int tag)
+void send_message(const RPC& rpc_message, size_t destination, int tag)
 {
     MPI_Request request;
     send_message(rpc_message, destination, request, tag);
     MPI_Request_free(&request);
 }
 
-std::optional<RPCQuery> send_and_wait_message(const RPC& rpc_message, int destination, float timeout, int tag)
+std::optional<RPCQuery> send_and_wait_message(const RPC& rpc_message, size_t destination, float timeout, int tag)
 {
     send_message(rpc_message, destination, tag);
     return wait_message(destination, timeout, tag);
 }
 
-std::optional<RPCQuery> receive_message(int source, int tag)
+std::optional<RPCQuery> receive_message(size_t source, int tag)
 {
     MPI_Status mpi_status;
     int flag;
@@ -47,7 +47,7 @@ std::optional<RPCQuery> receive_message(int source, int tag)
     auto json_response = nlohmann::json::parse(serialized_response);
 
     auto message_type = json_response["message_type"].get<RPC::RPC_TYPE>();
-    int term = json_response["term"];
+    size_t term = json_response["term"];
     auto message_content = json_response["message_content"];
 
     switch (message_type)
@@ -102,9 +102,9 @@ std::optional<RPCQuery> receive_message(int source, int tag)
     }
 }
 
-void receive_all_messages(int offset, int n_node, std::vector<RPCQuery>& queries, int tag)
+void receive_all_messages(size_t offset, size_t n_node, std::vector<RPCQuery>& queries, int tag)
 {
-    for (int source_rank = offset; source_rank < offset + n_node; source_rank++)
+    for (size_t source_rank = offset; source_rank < offset + n_node; source_rank++)
     {
         if (source_rank == ProcessInformation::instance().rank_)
             continue;
@@ -116,7 +116,7 @@ void receive_all_messages(int offset, int n_node, std::vector<RPCQuery>& queries
     }
 }
 
-std::optional<RPCQuery> wait_message(int source, float timeout, int tag)
+std::optional<RPCQuery> wait_message(size_t source, float timeout, int tag)
 {
     Clock clock;
 
@@ -130,9 +130,9 @@ std::optional<RPCQuery> wait_message(int source, float timeout, int tag)
     return std::nullopt;
 }
 
-void send_to_all(int offset, int n_node, const RPC& rpc_message, int tag)
+void send_to_all(size_t offset, size_t n_node, const RPC& rpc_message, int tag)
 {
-    for (int source_rank = offset; source_rank < offset + n_node; source_rank++)
+    for (size_t source_rank = offset; source_rank < offset + n_node; source_rank++)
     {
         if (ProcessInformation::instance().rank_ != source_rank)
             send_message(rpc_message, source_rank, tag);

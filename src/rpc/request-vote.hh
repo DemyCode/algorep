@@ -8,16 +8,16 @@
 class RequestVote : public RPC
 {
 public:
-    RequestVote(int term, int candidate_id, int last_log_index, int last_log_term);
+    RequestVote(int term, size_t candidate_id, size_t last_log_index, int last_log_term);
     RequestVote(int term, const json& serialized);
     RequestVote(int term, const std::string& serialized);
 
     json serialize_message() const override;
 
     // candidate requesting vote
-    const int candidate_id_;
+    const size_t candidate_id_;
     // index of candidate's last log entry
-    const int last_log_index_;
+    const size_t last_log_index_;
     // term of candidate's last log entry
     const int last_log_term_;
 };

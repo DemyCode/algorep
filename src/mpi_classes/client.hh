@@ -32,7 +32,7 @@ private:
     bool start_;
     bool stop_;
 
-    int leader_;
+    size_t leader_;
     Clock leader_search_clock_;
 
     std::queue<NewEntry> entries_to_send_;
@@ -40,5 +40,5 @@ private:
     bool entry_sent_;
     Clock entry_clock_;
 
-    std::queue<int> wait_finish_;
+    std::queue<size_t> wait_finish_;
 };
