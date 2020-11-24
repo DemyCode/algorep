@@ -13,6 +13,7 @@
 #include "rpc/request-vote.hh"
 #include "utils/clock.hh"
 #include "utils/entry.hh"
+#include "utils/debugger.hh"
 
 class Node
 {
@@ -47,6 +48,7 @@ private:
     state_t state_;
     float election_timeout_;
     Clock clock_;
+    Clock debug_clock_;
     size_t vote_count_;
 
     std::queue<RPCQuery> new_entries_;

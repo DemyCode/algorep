@@ -43,7 +43,7 @@ set(JSON_SOURCES
 set(UTILS_SOURCES
         lib/utils/clock.cc
         lib/utils/entry.cc
-        lib/utils/string_utils.cc)
+        lib/utils/string_utils.cc lib/utils/debugger.cc lib/utils/debugger.hh)
 
 set(LIB_SOURCES
         ${JSON_SOURCES}

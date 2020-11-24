@@ -8,6 +8,7 @@ Node::Node()
         : state_(state_t::FOLLOWER),
           election_timeout_(),
           clock_(),
+          debug_clock_(),
           vote_count_(0),
           new_entries_(),
           current_term_(0),
@@ -27,9 +28,10 @@ void Node::set_election_timeout() {
 
 void Node::run() {
     bool running = true;
-    std::cout << "Node " << ProcessInformation::instance().rank_ << " running." << std::endl;
+    debug_write("Node is" + std::to_string(ProcessInformation::instance().n_node_) + " running",
+                debug_clock_.check());
     while (running) {
-        Clock::wait(5000);
+        Clock::wait(1);
         std::vector<RPCQuery> queries;
         // Listen to everything
         receive_all_messages(0, ProcessInformation::instance().size_, queries);
@@ -48,7 +50,6 @@ void Node::run() {
 
         // TODO Create end of loop based on REPL state::STOPPED
         // FIXME remove return
-        return;
     }
     return;
 }
@@ -57,7 +58,8 @@ void Node::convert_to_candidate() {
     // TODO IMPLEMENTATION NEEDS BE DONE
     // THIS SECTION REFERS TO : RULES FOR SERVER -> CANDIDATES -> ON CONVERSION TO CANDIDATE, START ELECTION
     // THIS FUNCTION ONLY COVERS THE FIRST POINT THE THREE OTHERS ARE HANDLED THROUGH PROBING
-    std::cout << "Node " << ProcessInformation::instance().rank_ << " became candidate." << std::endl;
+    debug_write("Node " + std::to_string(ProcessInformation::instance().rank_) + " became candidate.",
+                debug_clock_.check());
     this->state_ = state_t::CANDIDATE;
     this->voted_for_ = ProcessInformation::instance().rank_;
     this->vote_count_ = 1;
@@ -73,7 +75,6 @@ void Node::all_server_check(const std::vector<RPCQuery> &queries) {
     // THIS SECTION REFER TO THE PART : RULES FOR SERVER -> ALL RULES
     if (this->commit_index_ > this->last_applied_) {
         last_applied_ += 1;
-        // TODO : APPLY LOG LAST APPLY TO STATE MACHINE
         std::ofstream log_file("log" + std::to_string(ProcessInformation::instance().rank_) + ".txt");
         if (log_file.is_open()) {
             log_file << log_[last_applied_].command_ << std::endl;
@@ -192,7 +193,8 @@ void Node::candidate_check(const std::vector<RPCQuery> &queries) {
 }
 
 void Node::convert_to_leader() {
-    std::cout << "Node " << ProcessInformation::instance().rank_ << " became leader." << std::endl;
+    debug_write("Node " + std::to_string(ProcessInformation::instance().rank_) + " became leader.",
+                debug_clock_.check());
     this->state_ = state_t::LEADER;
     this->clock_.reset();
     // Envoyer heartbeat à tous les serveurs
@@ -262,6 +264,6 @@ void Node::convert_to_follower() {
     this->voted_for_ = -1;
     this->clock_.reset();
     this->set_election_timeout();
-    std::cout << "Node " << ProcessInformation::instance().rank_ << " became follower with election_timeout "
-              << this->election_timeout_ << std::endl;
+    debug_write("Node " + std::to_string(ProcessInformation::instance().rank_) + " became follower.",
+                debug_clock_.check());
 }
