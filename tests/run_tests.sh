@@ -1,6 +1,6 @@
 #!/bin/sh
 
-TIMEOUT=2
+TIMEOUT=1
 
 RED='\033[0;31m'
 LIGHT_GREEN='\033[0;92m'
@@ -10,6 +10,11 @@ INVERT='\033[7m'
 NC='\033[0m'
 
 
+echo_fail()
+{
+    echo "${RED}${INVERT}[ FAIL  ]${NC}${INVERT} - ${test_name}${NC}"
+}
+
 run_integration_test()
 {
     integration_folder="$1"
@@ -17,31 +22,66 @@ run_integration_test()
 
     test_file_input="${integration_folder}/${test_name}.in"
     test_file_output="${integration_folder}/${test_name}.out"
+    test_file_log="${integration_folder}/${test_name}.log"
 
     client_count=$(sed '1q;d' "${test_file_input}")
     server_count=$(sed '2q;d' "${test_file_input}")
     generate_command_list=$(sed '3q;d' "${test_file_input}")
     commands=$(tail -n +4 "${test_file_input}")
 
-    echo "${commands}" | timeout "${TIMEOUT}" ./run.sh "${client_count}" "${server_count}" ${generate_command_list} 1> /tmp/raft_output 2> /dev/null
+    echo "${commands}" | timeout "${TIMEOUT}" ./run.sh "${client_count}" "${server_count}" ${generate_command_list} 2> /tmp/raft_output 1> /dev/null
     output="$?"
-
-    diff=$(diff -y --suppress-common-lines /tmp/raft_output "${test_file_output}")
-
-    res=0
-
-    if [ -n "${diff}" ] || [ "${output}" -eq 124 ]; then
-        res=1
-    fi
 
     if [ "${output}" -eq 124 ]; then
         echo "${ORANGE}${INVERT}[TIMEOUT]${NC}${INVERT} - ${test_name}${NC}"
-    elif [ "${res}" -eq 1 ]; then
-        echo "${RED}${INVERT}[ FAIL  ]${NC}${INVERT} - ${test_name}${NC}"
+        return 1
+    fi
+
+    res=0
+    print_fail=0
+
+    # Check Output
+    diff=$(diff -y --suppress-common-lines /tmp/raft_output "${test_file_output}")
+    if [ -n "${diff}" ]; then
+        res=1
+
+        if [ "${print_fail}" -eq 0 ]; then
+            print_fail=1
+            echo_fail
+        fi
+
+        echo "       output"
         echo "${diff}"
-        echo ""
-    else
+    fi
+
+    # Check Log
+    if [ "${server_count}" -gt 0 ]; then
+        for server_rank in $(seq "$((client_count + 1))" "$((client_count + server_count))"); do
+            log_file="log${server_rank}.txt"
+
+            diff=$(diff -y --suppress-common-lines "${log_file}" "${test_file_log}")
+
+            if [ -n "${diff}" ]; then
+                res=1
+
+                if [ "${print_fail}" -eq 0 ]; then
+                    print_fail=1
+                    echo_fail
+                fi
+
+                echo "       log server ${server_rank}"
+                echo "${diff}"
+            fi
+
+            rm -f "${log_file}"
+        done
+    fi
+
+    if [ "${res}" -eq 0 ]; then
         echo "${GREEN}${INVERT}[  OK   ]${NC}${INVERT} - ${test_name}${NC}"
+        res=0
+    else
+        echo ""
     fi
 
     return "${res}"
