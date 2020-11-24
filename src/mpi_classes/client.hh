@@ -23,7 +23,7 @@ private:
     void send_next_entry();
     void check_timeout();
     void reset_leader();
-    static void stop_nodes();
+    void send_wait_finish();
 
     const float timeout_;
 
@@ -31,7 +31,6 @@ private:
 
     bool start_;
     bool stop_;
-    bool auto_stop_;
 
     int leader_;
     Clock leader_search_clock_;
@@ -40,4 +39,6 @@ private:
 
     bool entry_sent_;
     Clock entry_clock_;
+
+    std::queue<int> wait_finish_;
 };

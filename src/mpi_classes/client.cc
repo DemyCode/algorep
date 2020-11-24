@@ -15,12 +15,12 @@ Client::Client()
     , speed_(Message::SPEED_TYPE::HIGH)
     , start_(false)
     , stop_(false)
-    , auto_stop_(false)
     , leader_(-1)
     , leader_search_clock_()
     , entries_to_send_()
     , entry_sent_(true)
     , entry_clock_()
+    , wait_finish_()
 {}
 
 void Client::add_command_list(const std::string& command_list_path)
@@ -42,13 +42,9 @@ void Client::run()
         receive_all_messages(0, ProcessInformation::instance().size_, queries);
         this->handle_queries(queries);
 
-        // Stop if auto stop is on
-        if (this->entries_to_send_.empty() && this->auto_stop_)
-        {
-            stop_nodes();
-            this->start_ = false;
-            this->stop_ = true;
-        }
+        // Send wait finish if empty
+        if (this->entries_to_send_.empty())
+            this->send_wait_finish();
 
         if (!this->start_)
             continue;
@@ -96,9 +92,9 @@ void Client::handle_message(const RPCQuery& query)
             this->reset_leader();
             break;
 
-        case Message::MESSAGE_TYPE::CLIENT_AUTO_STOP:
-            this->auto_stop_ = true;
-            break;
+        case Message::MESSAGE_TYPE::CLIENT_WAIT_FINISH:
+            this->wait_finish_.emplace(query.source_rank_);
+            return;
 
         case Message::MESSAGE_TYPE::PROCESS_SET_SPEED:
             this->speed_ = Message::parse_speed(message.message_content_);
@@ -123,7 +119,7 @@ void Client::handle_message(const RPCQuery& query)
             break;
     }
 
-    MessageResponse message_response(message.uid_, success);
+    MessageResponse message_response(success);
     send_message(message_response, query.source_rank_);
 }
 
@@ -186,13 +182,20 @@ void Client::reset_leader()
 {
     if (this->leader_ == -1)
         return;
-    
+
     this->leader_ = -1;
     this->leader_search_clock_.reset();
 }
 
-void Client::stop_nodes()
+void Client::send_wait_finish()
 {
-    Message message(0, Message::MESSAGE_TYPE::PROCESS_STOP, "empty");
-    send_to_all(ProcessInformation::instance().node_offset_, ProcessInformation::instance().n_node_, message);
+    while (!this->wait_finish_.empty())
+    {
+        const auto& destination_rank = this->wait_finish_.front();
+
+        MessageResponse message_response(true);
+        send_message(message_response, destination_rank);
+
+        this->wait_finish_.pop();
+    }
 }

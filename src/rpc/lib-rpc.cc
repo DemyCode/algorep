@@ -20,6 +20,12 @@ void send_message(const RPC& rpc_message, int destination, int tag)
     MPI_Request_free(&request);
 }
 
+std::optional<RPCQuery> send_and_wait_message(const RPC& rpc_message, int destination, float timeout, int tag)
+{
+    send_message(rpc_message, destination, tag);
+    return wait_message(destination, timeout, tag);
+}
+
 std::optional<RPCQuery> receive_message(int source, int tag)
 {
     MPI_Status mpi_status;
@@ -114,7 +120,7 @@ std::optional<RPCQuery> wait_message(int source, float timeout, int tag)
 {
     Clock clock;
 
-    while (clock.check() < timeout)
+    while (timeout == -1 || clock.check() < timeout)
     {
         auto query = receive_message(source, tag);
         if (query.has_value())
