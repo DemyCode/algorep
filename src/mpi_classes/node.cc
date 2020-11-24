@@ -251,8 +251,14 @@ void Node::handle_request_vote(const RPCQuery &query) {
         return;
     }
     if (voted_for_ == -1) {
+        if (request_vote.last_log_index_ == -1)
+        {
+            send_message(RequestVoteResponse(request_vote.term_, true), request_vote.candidate_id_);
+            return;
+        }
+
         if (log_[request_vote.last_log_index_].term_ == request_vote.last_log_term_) {
-            if (request_vote.last_log_index_ > log_.size() - 1){
+            if (request_vote.last_log_index_ > (int)log_.size() - 1){
                 send_message(RequestVoteResponse(request_vote.term_, true), request_vote.candidate_id_);
             }
             else

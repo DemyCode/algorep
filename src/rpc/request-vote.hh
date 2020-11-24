@@ -17,7 +17,7 @@ public:
     // candidate requesting vote
     const size_t candidate_id_;
     // index of candidate's last log entry
-    const size_t last_log_index_;
+    const int last_log_index_;
     // term of candidate's last log entry
     const size_t last_log_term_;
 };
