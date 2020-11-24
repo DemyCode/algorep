@@ -56,13 +56,18 @@ run_integration_test()
 
     # Check Log
     if [ "${server_count}" -gt 0 ]; then
+        test_file_log_sorted="${test_file_log}.sorted"
+        sort "${test_file_log}" > "${test_file_log_sorted}"
+
         for server_rank in $(seq "$((client_count + 1))" "$((client_count + server_count))"); do
-            log_file="log${server_rank}.txt"
+            log_file="log${server_rank}.txt"g
 
-            diff=$(diff -y --suppress-common-lines "${log_file}" "${test_file_log}" 2> /dev/null)
-            output="$?"
+            if [ -f "${log_file}" ]; then
+                log_file_sorted="${log_file}.sorted"
+                sort "${log_file}" > "${log_file_sorted}"
 
-            if [ "${output}" -ne 0 ]; then
+                diff=$(diff -y --suppress-common-lines "${log_file_sorted}" "${test_file_log_sorted}" 2> /dev/null)
+            else
                 diff="Log file does not exist"
             fi
 
@@ -79,7 +84,10 @@ run_integration_test()
             fi
 
             rm -f "${log_file}"
+            rm -f "${log_file_sorted}"
         done
+
+        rm -rf "${test_file_log_sorted}"
     fi
 
     if [ "${res}" -eq 0 ]; then
