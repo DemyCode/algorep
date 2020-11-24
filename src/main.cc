@@ -74,7 +74,6 @@ int main(int argc, char* argv[])
                      "path_command_list_client_2 ...]"
                   << std::endl
                   << "where size == n_client + n_server + 1" << std::endl;
-        MPI_Finalize();
         return 1;
     }
 
@@ -106,6 +105,5 @@ int main(int argc, char* argv[])
         node.run();
     }
 
-    MPI_Finalize();
     return 0;
 }

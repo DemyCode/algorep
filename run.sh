@@ -4,7 +4,7 @@
 BUILD_DIRECTORY_LIST="build cmake-build-release cmake-build-debug"
 EXEC_NAME="raft"
 MIN_COMMAND_COUNT=10
-MAX_COMMAND_COUNT=100
+MAX_COMMAND_COUNT=99
 
 print_usage()
 {
@@ -25,13 +25,13 @@ generate_command_list_file()
     client_index="$1"
     file_name="/tmp/command_list_client_${client_index}.txt"
 
-    rm "${file_name}"
+    rm -f "${file_name}"
 
     command_count="$(shuf -i ${MIN_COMMAND_COUNT}-${MAX_COMMAND_COUNT} -n 1)"
 
-    for command_index in $(seq "${command_count}"); do
+    for command_index in $(seq -w "${command_count}"); do
         random_number="$(shuf -i 1-10000 -n 1)"
-        command="command_test ${random_number}"
+        command="${command_index} command_test ${random_number}"
         echo "${command}" >> "${file_name}"
     done
 }
@@ -116,7 +116,3 @@ fi
 echo ""
 
 mpirun -np ${total_size} --oversubscribe ./"${build_path}/${EXEC_NAME}" "${client_count}" "${server_count}" ${command_list_files}
-
-for command_list_file in ${command_list_files}; do
-    rm "${command_list_file}"
-done
