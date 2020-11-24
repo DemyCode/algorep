@@ -279,7 +279,7 @@ void Controller::handle_sleep(const std::vector<std::string>& tokens)
 
 void Controller::run()
 {
-    std::cout << "> ";
+    std::cerr << "> ";
 
     for (std::string line; std::getline(std::cin, line);)
     {
@@ -317,6 +317,6 @@ void Controller::run()
             }
         }
 
-        std::cout << "> ";
+        std::cerr << "> ";
     }
 }
