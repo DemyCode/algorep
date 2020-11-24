@@ -14,36 +14,32 @@ run_integration_test()
     test_name="$2"
 
     test_file_input="${integration_folder}/${test_name}.in"
-    test_file_output="${integration_folder}/${test_name}.in"
+    test_file_output="${integration_folder}/${test_name}.out"
 
     client_count=$(sed '1q;d' "${test_file_input}")
     server_count=$(sed '2q;d' "${test_file_input}")
     generate_command_list=$(sed '3q;d' "${test_file_input}")
     commands=$(tail -n +4 "${test_file_input}")
 
-    echo "client_count: ${client_count}"
-    echo "server_count: ${server_count}"
-    echo "generate_command_list: ${generate_command_list}"
-    echo "commands: ${commands}"
-    
-    # TODO RUN TEST
+    echo "${commands}" | ./run.sh "${client_count}" "${server_count}" "${generate_command_list}" 1> /tmp/raft_output 2> /dev/null
+
+    diff=$(diff -y --suppress-common-lines /tmp/raft_output "${test_file_output}")
 
     res=0
 
+    if [ -n "${diff}" ]; then
+        res=1
+    fi
+
     if [ "${res}" -eq 1 ]; then
         echo "${RED}${INVERT}[FAIL]${NC}${INVERT} - ${test_name}${NC}"
-        echo "       stdout > ${stdout}"
         echo "${diff}"
-        echo "       stderr > ${stderr} (${l1} - ${l2})"
-        echo "${diff_err}"
-        echo "       output > ${output} (${o1} - ${o2})"
         echo ""
     else
         echo "${GREEN}${INVERT}[ OK ]${NC}${INVERT} - ${test_name}${NC}"
     fi
 
-    return "$res"
-
+    return "${res}"
 }
 
 run_integration_tests()
@@ -75,3 +71,5 @@ integration_folder="${current_dir}/integration"
 integration_tests="$(find "${integration_folder}" -type f -a -name "*.in" -exec /bin/sh -c "echo {} | rev | cut -f 2- -d '.' | cut -f 1 -d '/' | rev" \; | sort)"
 
 run_integration_tests "${integration_folder}" "${integration_tests}"
+
+rm -f /tmp/raft_output

@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
 
     if (rank == 0)
     {
-        std::cout << "Start controller, rank: " << rank << std::endl;
+        std::cerr << "Start controller, rank: " << rank << std::endl;
 
         // CONSOLE
         Controller controller;
@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
     }
     else if (rank <= n_client)
     {
-        std::cout << "Start client, rank: " << rank << std::endl;
+        std::cerr << "Start client, rank: " << rank << std::endl;
 
         // CLIENT
         Client client;
@@ -90,7 +90,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        std::cout << "Start server, rank: " << rank << std::endl;
+        std::cerr << "Start server, rank: " << rank << std::endl;
 
         // SERVER
         int offset = n_client + 1;
