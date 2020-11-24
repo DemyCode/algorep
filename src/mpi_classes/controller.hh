@@ -27,6 +27,7 @@ private:
     void handle_wait_finish(const std::vector<std::string>& tokens);
     void handle_get_state(const std::vector<std::string>& tokens) const;
     static void handle_sleep(const std::vector<std::string>& tokens);
+    void handle_timeout(const std::vector<std::string>& tokens);
 
     const float timeout_;
 };

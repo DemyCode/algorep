@@ -143,9 +143,10 @@ void Node::follower_check(const std::vector<RPCQuery> &queries) {
 }
 
 std::vector<Entry> slice_vector(std::vector<Entry> vect, int begin) {
-    std::vector<Entry>::const_iterator first = vect.begin() + begin;
-    std::vector<Entry>::const_iterator last = vect.end();
-    return std::vector<Entry>(first, last);
+    std::vector<Entry> res_vector = std::vector<Entry>();
+    for (size_t i = begin; i < vect.size(); i++)
+        res_vector.push_back(vect[i]);
+    return res_vector;
 }
 
 void Node::leader_check(const std::vector<RPCQuery> &queries) {
@@ -158,8 +159,8 @@ void Node::leader_check(const std::vector<RPCQuery> &queries) {
                 // send AppendEntries RPC with log entries starting at nextIndex
                 AppendEntries append_entries(this->current_term_,
                                              ProcessInformation::instance().rank_,
-                                             next_index_[i] - 1,
-                                             log_[next_index_[i] - 1].term_,
+                                             next_index_.at(i) - 1,
+                                             log_.at(next_index_.at(i) - 1).term_,
                                              slice_vector(log_, next_index_[i]),
                                              this->commit_index_);
                 send_message(append_entries, i + ProcessInformation::instance().node_offset_);
@@ -281,13 +282,22 @@ void Node::handle_request_vote(const RPCQuery &query) {
         return;
     }
     if (voted_for_ == -1) {
+        if (request_vote.last_log_index_ == -1)
+        {
+            send_message(RequestVoteResponse(request_vote.term_, true), request_vote.candidate_id_);
+            this->voted_for_ = request_vote.candidate_id_;
+            return;
+        }
+
         if (log_[request_vote.last_log_index_].term_ == request_vote.last_log_term_) {
-            if (request_vote.last_log_index_ > log_.size() - 1){
+            if (request_vote.last_log_index_ > (int)log_.size() - 1){
                 send_message(RequestVoteResponse(request_vote.term_, true), request_vote.candidate_id_);
+                this->voted_for_ = request_vote.candidate_id_;
             }
             else
                 send_message(RequestVoteResponse(request_vote.term_, false), request_vote.candidate_id_);
         } else if (log_[request_vote.last_log_index_].term_ < request_vote.last_log_term_) {
+            this->voted_for_ = request_vote.candidate_id_;
             send_message(RequestVoteResponse(request_vote.term_, true), request_vote.candidate_id_);
         } else
             send_message(RequestVoteResponse(request_vote.term_, false), request_vote.candidate_id_);

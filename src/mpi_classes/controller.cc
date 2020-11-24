@@ -31,6 +31,7 @@ void Controller::print_help()
         << " - crash [process_rank]              - crash the process_rank" << std::endl
         << " - recover [process_rank]            - recover the process_rank" << std::endl
         << " - stop [process_rank]               - stop the process_rank" << std::endl
+        << " - timeout [server_rank]             - simulate an election timeout on the server_rank" << std::endl
         << " - wait_finish [client_rank]         - wait that a client has send all his messages" << std::endl
         << " - get_state [server_rank]           - get the state of the server_rank" << std::endl
         << " - sleep [milliseconds]              - sleep the current process for milliseconds" << std::endl;
@@ -277,6 +278,24 @@ void Controller::handle_sleep(const std::vector<std::string>& tokens)
     Clock::wait(milliseconds);
 }
 
+void Controller::handle_timeout(const std::vector<std::string>& tokens)
+{
+    if (tokens.size() <= 1)
+    {
+        std::cout << "Missing arguments" << std::endl;
+        return;
+    }
+
+    int destination_rank = parse_int(tokens[1]);
+    if (!ProcessInformation::instance().is_rank_node(destination_rank))
+    {
+        std::cout << "Invalid rank: " << tokens[1] << std::endl;
+        return;
+    }
+
+    this->send_message(destination_rank, Message::MESSAGE_TYPE::SERVER_TIMEOUT);
+}
+
 void Controller::run()
 {
     std::cerr << "> ";
@@ -304,6 +323,8 @@ void Controller::run()
                 this->handle_recover(tokens);
             else if (tokens[0] == "stop")
                 this->handle_stop(tokens);
+            else if (tokens[0] == "timeout")
+                this->handle_timeout(tokens);
             else if (tokens[0] == "wait_finish")
                 this->handle_wait_finish(tokens);
             else if (tokens[0] == "get_state")
