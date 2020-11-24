@@ -133,6 +133,7 @@ void Node::leader_check(const std::vector<RPCQuery> &queries) {
             NewEntry new_entry = std::get<NewEntry>(query.content_);
             Entry res_entry = Entry(this->current_term_, new_entry.entry_.command_);
             this->log_.push_back(res_entry);
+            this->new_entries_.push(query);
             // TODO RESPOND AFTER APPLY TO STATE MACHINE
             // See all_server_check
         }
