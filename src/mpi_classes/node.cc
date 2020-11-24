@@ -148,8 +148,35 @@ void Node::all_server_check(const std::vector<RPCQuery> &queries) {
             MessageResponse message_response(success);
             send_message(message_response, query.source_rank_);
         }
+        else if (query.type_ == RPC::RPC_TYPE::GET_STATE)
+        {
+            GetStateResponse gs_response(this->state_);
+            send_message(gs_response, query.source_rank_);
+        }
+        else if (query.type_ == RPC::RPC_TYPE::SEARCH_LEADER)
+        {
+            if (this->state_ == state_t::LEADER)
+            {
+                SearchLeaderResponse sl_response(this->rank_);
+                send_message(sl_response, query.source_rank_);
+            }
+        }
+        else if (query.type_ == RPC::RPC_TYPE::NEW_ENTRY)
+        {
+            if (this->state_ != state_t::LEADER)
+            {
+                NewEntryResponse ne_response(false);
+                send_message(ne_response, query.source_rank_);
+            }
+        }
     }
 }
+
+/*
+NewEntry ->
+- Renvoyer false si on est pas un LEADER
+- Renvoyer true que si l'Entry a bien été copiée sur les FOLLOWER
+*/
 
 void Node::follower_check(const std::vector<RPCQuery> &queries) {
     // TODO
