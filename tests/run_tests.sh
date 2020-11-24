@@ -69,6 +69,8 @@ run_integration_tests()
     elif [ "${fail}" -gt 0 ]; then
         echo "${RED}[FAIL]${NC} ${recap}"
     fi
+
+    return "${fail}"
 }
 
 current_dir="$(echo "$0" | rev | cut -f 2- -d '/' | rev)"
@@ -76,5 +78,8 @@ integration_folder="${current_dir}/integration"
 integration_tests="$(find "${integration_folder}" -type f -a -name "*.in" -exec /bin/sh -c "echo {} | rev | cut -f 2- -d '.' | cut -f 1 -d '/' | rev" \; | sort)"
 
 run_integration_tests "${integration_folder}" "${integration_tests}"
+fail="$?"
 
 rm -f /tmp/raft_output
+
+exit "${fail}"
