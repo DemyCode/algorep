@@ -49,4 +49,4 @@ jobs:
     - name: Test
       working-directory: ${{runner.workspace}}
       shell: bash
-      run: make test
+      run: ./tests/run_tests.sh
