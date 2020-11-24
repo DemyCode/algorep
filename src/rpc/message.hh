@@ -10,10 +10,11 @@ public:
         CLIENT_CREATE_NEW_ENTRY,
         CLIENT_START,
         CLIENT_WAIT_FINISH,
+        SERVER_TIMEOUT,
         PROCESS_SET_SPEED,
         PROCESS_CRASH,
         PROCESS_RECOVER,
-        PROCESS_STOP
+        PROCESS_STOP,
     };
 
     enum SPEED_TYPE
