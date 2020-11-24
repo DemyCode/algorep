@@ -9,6 +9,7 @@ public:
     {
         CLIENT_CREATE_NEW_ENTRY,
         CLIENT_START,
+        CLIENT_AUTO_STOP,
         PROCESS_SET_SPEED,
         PROCESS_CRASH,
         PROCESS_RECOVER,
