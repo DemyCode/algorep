@@ -11,7 +11,6 @@ Node::Node()
     , heartbeat_timeout_(30)
     , speed_(Message::SPEED_TYPE::HIGH)
     , stop_(false)
-    , crash_(false)
     , clock_()
     , vote_count_(0)
     , new_entries_()
@@ -23,7 +22,7 @@ Node::Node()
     , next_index_(ProcessInformation::instance().n_node_, 0)
     , match_index_(ProcessInformation::instance().n_node_, -1)
 {
-    this->convert_to_follower();
+    this->set_election_timeout();
 }
 
 static std::vector<Entry> slice_vector(const std::vector<Entry>& vect, int begin)
@@ -42,7 +41,6 @@ void Node::set_election_timeout()
 
 void Node::reset_node()
 {
-    this->state_ = state_t::FOLLOWER;
     this->vote_count_ = 0;
     this->new_entries_ = std::queue<RPCQuery>();
     this->current_term_ = 0;
@@ -52,8 +50,6 @@ void Node::reset_node()
     this->last_applied_ = -1;
     this->next_index_ = std::vector<int>(ProcessInformation::instance().n_node_, 0);
     this->match_index_ = std::vector<int>(ProcessInformation::instance().n_node_, -1);
-
-    this->convert_to_follower();
 }
 
 void Node::run()
@@ -69,9 +65,6 @@ void Node::run()
         std::vector<RPCQuery> queries;
         receive_all_messages(0, ProcessInformation::instance().size_, queries);
         this->all_server_check(queries);
-
-        if (this->crash_)
-            continue;
 
         if (this->state_ == state_t::FOLLOWER)
             this->follower_check();
@@ -97,14 +90,11 @@ void Node::convert_to_candidate()
     this->clock_.reset();
 
     int last_log_term = -1;
-
     if (!log_.empty())
         last_log_term = log_.back().term_;
 
     RequestVote request_vote(this->current_term_, ProcessInformation::instance().rank_, log_.size() - 1, last_log_term);
     send_to_all(ProcessInformation::instance().node_offset_, ProcessInformation::instance().n_node_, request_vote);
-
-    this->set_election_timeout();
 }
 
 void Node::convert_to_follower()
@@ -116,8 +106,6 @@ void Node::convert_to_follower()
     this->vote_count_ = 0;
 
     this->clock_.reset();
-
-    this->set_election_timeout();
 }
 
 void Node::convert_to_leader()
@@ -134,9 +122,27 @@ void Node::convert_to_leader()
         this->match_index_.at(server_rank_offset) = -1;
     }
 
-    AppendEntries empty_append(
-        this->current_term_, ProcessInformation::instance().rank_, -1, -1, std::vector<Entry>(), this->commit_index_);
-    send_to_all(ProcessInformation::instance().node_offset_, ProcessInformation::instance().n_node_, empty_append, 0);
+    for (size_t rank_offset = 0; rank_offset < ProcessInformation::instance().n_node_; rank_offset++)
+    {
+        size_t destination_rank = rank_offset + ProcessInformation::instance().node_offset_;
+        if (destination_rank == ProcessInformation::instance().rank_)
+            continue;
+
+        int prev_log_index = this->next_index_.at(rank_offset) - 1;
+        int prev_log_term = -1;
+        if (prev_log_index >= 0 && prev_log_index < (int)this->log_.size())
+            prev_log_term = this->log_.at(prev_log_index).term_;
+
+        debug_write("Send heartbeat to " + std::to_string(destination_rank));
+
+        AppendEntries empty_append(this->current_term_,
+                                   ProcessInformation::instance().rank_,
+                                   prev_log_index,
+                                   prev_log_term,
+                                   std::vector<Entry>(), // empty entries means heartbeat in response
+                                   this->commit_index_);
+        send_message(empty_append, destination_rank);
+    }
 }
 
 void Node::all_server_check(const std::vector<RPCQuery>& queries)
@@ -171,7 +177,7 @@ void Node::all_server_check(const std::vector<RPCQuery>& queries)
 
     for (const auto& query : queries)
     {
-        if (query.term_ > this->current_term_)
+        if (this->state_ != state_t::STOPPED && query.term_ > this->current_term_)
         {
             this->current_term_ = query.term_;
             convert_to_follower();
@@ -183,11 +189,12 @@ void Node::all_server_check(const std::vector<RPCQuery>& queries)
         }
         else if (query.type_ == RPC::RPC_TYPE::GET_STATE)
         {
+            debug_write("Receive Message: Get State");
             GetStateResponse gs_response(this->state_);
             send_message(gs_response, query.source_rank_);
         }
 
-        if (!this->crash_)
+        if (this->state_ != state_t::STOPPED)
         {
             if (query.type_ == RPC::RPC_TYPE::APPEND_ENTRIES)
                 handle_append_entries(query);
@@ -197,6 +204,7 @@ void Node::all_server_check(const std::vector<RPCQuery>& queries)
             {
                 if (this->state_ == state_t::LEADER)
                 {
+                    debug_write("Receive Message: Search Leader");
                     SearchLeaderResponse sl_response(ProcessInformation::instance().rank_);
                     send_message(sl_response, query.source_rank_);
                 }
@@ -275,8 +283,8 @@ void Node::leader_check(const std::vector<RPCQuery>& queries)
         }
         else if (query.type_ == RPC::RPC_TYPE::APPEND_ENTRIES_RESPONSE)
         {
-            debug_write("Receive Message: Append Entries Response");
             const auto& aer = std::get<AppendEntriesResponse>(query.content_);
+            debug_write("Receive Message: Append Entries Response: success " + std::to_string(aer.success_));
             size_t source_rank_offset = query.source_rank_ - ProcessInformation::instance().node_offset_;
 
             if (aer.success_)
@@ -327,14 +335,14 @@ void Node::candidate_check(const std::vector<RPCQuery>& queries)
             if (append_entries.term_ >= current_term_)
             {
                 convert_to_follower();
+                return;
             }
         }
     }
 
     if (vote_count_ > ProcessInformation::instance().n_node_ / 2)
         convert_to_leader();
-
-    if (clock_.check() > election_timeout_)
+    else if (clock_.check() > election_timeout_)
         convert_to_candidate();
 }
 
@@ -393,6 +401,7 @@ void Node::handle_append_entries(const RPCQuery& query)
 
 void Node::handle_request_vote(const RPCQuery& query)
 {
+    debug_write("Receive Message: Request Vote");
     const auto& request_vote = std::get<RequestVote>(query.content_);
 
     if (request_vote.term_ < this->current_term_)
@@ -412,7 +421,7 @@ void Node::handle_request_vote(const RPCQuery& query)
 
         if (this->log_.at(request_vote.last_log_index_).term_ == request_vote.last_log_term_)
         {
-            if (request_vote.last_log_index_ > (int)this->log_.size() - 1)
+            if (request_vote.last_log_index_ >= (int)this->log_.size() - 1)
             {
                 send_message(RequestVoteResponse(request_vote.term_, true), request_vote.candidate_id_);
                 this->voted_for_ = request_vote.candidate_id_;
@@ -437,6 +446,7 @@ void Node::handle_message(const RPCQuery& query)
     bool success = true;
 
     const auto& message = std::get<Message>(query.content_);
+    debug_write("Receive Message: Message: " + std::to_string(message.message_type_));
     switch (message.message_type_)
     {
         case Message::MESSAGE_TYPE::PROCESS_SET_SPEED:
@@ -448,12 +458,12 @@ void Node::handle_message(const RPCQuery& query)
             break;
 
         case Message::MESSAGE_TYPE::PROCESS_CRASH:
-            this->crash_ = true;
-            reset_node();
+            this->state_ = state_t::STOPPED;
+            this->reset_node();
             break;
 
         case Message::MESSAGE_TYPE::PROCESS_RECOVER:
-            this->crash_ = false;
+            this->convert_to_follower();
             break;
 
         case Message::MESSAGE_TYPE::SERVER_TIMEOUT:

@@ -45,7 +45,6 @@ private:
     float heartbeat_timeout_;
     Message::SPEED_TYPE speed_;
     bool stop_;
-    bool crash_;
     Clock clock_;
     size_t vote_count_;
 

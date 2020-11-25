@@ -32,6 +32,7 @@ run_integration_test()
 
     # Run test
     rm -f /tmp/raft_output
+    rm -f log*.txt
     echo "${commands}" | timeout "${TIMEOUT}" ./run.sh "${client_count}" "${server_count}" "${generate_command_list}" 2> /tmp/raft_output 1> /dev/null
     output="$?"
 
