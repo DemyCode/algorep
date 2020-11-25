@@ -1,6 +1,7 @@
+#include "new-entry.hh"
+
 #include <utility>
 
-#include "new-entry.hh"
 NewEntry::NewEntry(Entry entry)
     : RPC(-1, RPC::RPC_TYPE::NEW_ENTRY)
     , entry_(std::move(entry))
