@@ -20,6 +20,7 @@ class Node
 public:
     using state_t = GetStateResponse::STATE;
 
+    /// Constructor
     Node();
 
     /**
