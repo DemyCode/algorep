@@ -9,6 +9,7 @@ build:
 	cd build; make raft -j
 
 debug:
+	mkdir -p debug
 	mkdir -p build
 	cd build; cmake -DCMAKE_BUILD_TYPE=Debug ..
 	cd build; make raft -j
