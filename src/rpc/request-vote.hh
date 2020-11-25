@@ -8,6 +8,13 @@
 class RequestVote : public RPC
 {
 public:
+    /**
+     * @brief Message to Request a Vote, sent from Candidate
+     * @param term term of the sender
+     * @param candidate_id rank of the sender
+     * @param last_log_index last log index of the sender
+     * @param last_log_term last log term of the sender
+     */
     RequestVote(int term, size_t candidate_id, size_t last_log_index, int last_log_term);
     RequestVote(int term, const json& serialized);
     RequestVote(int term, const std::string& serialized);
@@ -25,6 +32,11 @@ public:
 class RequestVoteResponse : public RPC
 {
 public:
+    /**
+     * @brief Response to RequestVote, send to Candidate
+     * @param term
+     * @param vote_granted_
+     */
     RequestVoteResponse(int term, bool vote_granted_);
     RequestVoteResponse(int term, const json& serialized_json);
     RequestVoteResponse(int term, const std::string& serialized);

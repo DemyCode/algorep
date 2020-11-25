@@ -7,6 +7,10 @@
 class RPC
 {
 public:
+    /**
+    * @brief enum to identify the RPC type
+    *
+    */
     enum RPC_TYPE
     {
         APPEND_ENTRIES,
@@ -25,12 +29,18 @@ public:
 
     using json = nlohmann::json;
 
+    /**
+    * @brief Abstract RPC Constructor
+    *
+    */
     RPC(int term, RPC_TYPE rpc_type);
     virtual ~RPC() = default;
 
     std::string serialize() const;
     virtual json serialize_message() const = 0;
 
+    // term of the RPC
     const int term_;
+    // type of the RPC
     const RPC_TYPE rpc_type_;
 };

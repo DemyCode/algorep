@@ -26,10 +26,20 @@ public:
                                    GetState,
                                    GetStateResponse>;
 
+    /**
+     * @brief Constructor for Querying the messages
+     * @param source_rank rank of query
+     * @param term term of query
+     * @param content Content type for appropriating casting
+     */
     RPCQuery(size_t source_rank, RPC::RPC_TYPE type, int term, content_t content);
 
+    // id of sender
     const size_t source_rank_;
+    // type of the RPC
     const RPC::RPC_TYPE type_;
+    // term of the RPC
     const int term_;
+    // content of the RPC; the RPC itself
     const content_t content_;
 };
