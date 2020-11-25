@@ -281,16 +281,21 @@ void Node::leader_check(const std::vector<RPCQuery>& queries)
         else if (query.type_ == RPC::RPC_TYPE::APPEND_ENTRIES_RESPONSE)
         {
             const auto& aer = std::get<AppendEntriesResponse>(query.content_);
-            debug_write("Receive Message: Append Entries Response: success " + std::to_string(aer.success_));
             size_t source_rank_offset = query.source_rank_ - ProcessInformation::instance().node_offset_;
 
             if (aer.success_)
             {
-                next_index_.at(source_rank_offset) += 1;
                 match_index_.at(source_rank_offset) += 1;
+
+                if (this->match_index_.at(source_rank_offset) >= next_index_.at(source_rank_offset))
+                    next_index_.at(source_rank_offset) += 1;
             }
             else
+            {
                 next_index_.at(source_rank_offset) -= 1;
+            }
+
+            debug_write("Receive Message: Append Entries Response: success " + std::to_string(aer.success_));
         }
     }
 
@@ -310,7 +315,7 @@ void Node::leader_check(const std::vector<RPCQuery>& queries)
     }
 
     if (N > this->commit_index_ && majority > ProcessInformation::instance().n_node_ / 2
-        && this->log_.at(N).term_ == current_term_)
+        && this->log_.at(N).term_ == this->current_term_)
     {
         this->commit_index_ = N;
     }
@@ -323,7 +328,7 @@ void Node::candidate_check(const std::vector<RPCQuery>& queries)
         if (query.type_ == RPC::RPC_TYPE::REQUEST_VOTE_RESPONSE)
         {
             const auto& request_vote_response = std::get<RequestVoteResponse>(query.content_);
-            vote_count_ += request_vote_response.vote_granted_ ? 1 : 0;
+            this->vote_count_ += request_vote_response.vote_granted_ ? 1 : 0;
             debug_write("Receive " + std::to_string(this->vote_count_) + " votes");
         }
         else if (query.type_ == RPC::RPC_TYPE::APPEND_ENTRIES)
@@ -337,7 +342,7 @@ void Node::candidate_check(const std::vector<RPCQuery>& queries)
         }
     }
 
-    if (vote_count_ > ProcessInformation::instance().n_node_ / 2)
+    if (this->vote_count_ > ProcessInformation::instance().n_node_ / 2)
         convert_to_leader();
     else if (clock_.check() > election_timeout_)
         convert_to_candidate();
@@ -347,7 +352,7 @@ void Node::handle_append_entries(const RPCQuery& query)
 {
     const auto& append_entries = std::get<AppendEntries>(query.content_);
 
-    debug_write("Receive Message: Append Entries");
+    debug_write("Receive Message: Append Entries: " + std::to_string(append_entries.entries_.size()));
 
     // 1 & 2
     if (append_entries.term_ < this->current_term_)
