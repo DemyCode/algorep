@@ -1,0 +1,17 @@
+1
+3
+no
+print_local_log 2
+print_local_log 3
+print_local_log 4
+entry 1 test
+start 1
+wait_finish 1
+sleep 350
+print_local_log 2
+print_local_log 3
+print_local_log 4
+stop 1
+stop 2
+stop 3
+stop 4
