@@ -1,7 +1,9 @@
 name: github pages
 
 on:
-  push: [push]
+  push:
+    branches:
+      - master
 
 jobs:
   deploy:
@@ -15,7 +17,7 @@ jobs:
         run: make doc
 
       - name: Deploy
-          uses: peaceiris/actions-gh-pages@v3
-          with:
-            github_token: ${{ secrets.GITHUB_TOKEN }}
-            publish_dir: ./docs
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs
