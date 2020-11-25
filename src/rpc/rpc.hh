@@ -25,12 +25,29 @@ public:
 
     using json = nlohmann::json;
 
+    ///Constructor
     RPC(int term, RPC_TYPE rpc_type);
+
+    ///Destructor
     virtual ~RPC() = default;
 
+    /**
+     * @brief Serialize the rpc in a string
+     * 
+     * @return std::string 
+     */
     std::string serialize() const;
+
+    /**
+     * @brief Serialize the rpc in a json
+     * 
+     * @return json 
+     */
     virtual json serialize_message() const = 0;
 
+    ///Term of the rpc
     const int term_;
+
+    ///Type of the rpc
     const RPC_TYPE rpc_type_;
 };
