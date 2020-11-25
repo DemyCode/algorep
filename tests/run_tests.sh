@@ -136,11 +136,15 @@ run_integration_tests()
 {
     integration_folder="$1"
     integration_tests="$2"
+    test_to_execute="$3"
     count=0
     fail=0
 
     # For each test in the integration folder
     for integration_test in ${integration_tests}; do
+        if [ -n "${test_to_execute}" ] && [ "${integration_test}" != "${test_to_execute}" ]; then
+            continue
+        fi
         run_integration_test "${integration_folder}" "${integration_test}"
 
         if [ "$?" -eq 1 ]; then
@@ -160,13 +164,15 @@ run_integration_tests()
     return "${fail}"
 }
 
+test_to_execute="$1"
+
 # Init basic var
 current_dir="$(echo "$0" | rev | cut -f 2- -d '/' | rev)"
 integration_folder="${current_dir}/integration"
 integration_tests="$(find "${integration_folder}" -type f -a -name "*.in" -exec /bin/sh -c "echo {} | rev | cut -f 2- -d '.' | cut -f 1 -d '/' | rev" \; | sort)"
 
 # Run integration tests
-run_integration_tests "${integration_folder}" "${integration_tests}"
+run_integration_tests "${integration_folder}" "${integration_tests}" "${test_to_execute}"
 fail="$?"
 
 exit "${fail}"

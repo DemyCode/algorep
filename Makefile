@@ -11,4 +11,7 @@ debug:
 	cd build; make raft
 
 test: build
-	./tests/run_tests.sh
+	./tests/run_tests.sh $(filter-out $@,$(MAKECMDGOALS))
+
+%:
+	@:
