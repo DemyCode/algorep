@@ -25,7 +25,7 @@ public:
                                    MessageResponse,
                                    GetState,
                                    GetStateResponse>;
-
+    
     /**
      * @brief Constructor for Querying the messages
      * @param source_rank rank of query
@@ -34,12 +34,15 @@ public:
      */
     RPCQuery(size_t source_rank, RPC::RPC_TYPE type, int term, content_t content);
 
-    // id of sender
+    ///Source rank
     const size_t source_rank_;
-    // type of the RPC
+
+    ///Type of the RPC
     const RPC::RPC_TYPE type_;
-    // term of the RPC
+
+    ///Term of the RPC
     const int term_;
-    // content of the RPC; the RPC itself
+
+    ///Content of the RPC
     const content_t content_;
 };
