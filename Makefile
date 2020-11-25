@@ -15,7 +15,7 @@ test: build
 	./tests/run_tests.sh $(filter-out $@,$(MAKECMDGOALS))
 
 doc:
-	doxygen Doxyfileg
+	doxygen Doxyfile
 
 %:
 	@:
