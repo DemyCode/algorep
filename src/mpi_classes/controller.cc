@@ -13,7 +13,7 @@
 #include "utils/string_utils.hh"
 
 Controller::Controller()
-    : timeout_(500) // TODO define timeout
+    : timeout_(500)
 {}
 
 void Controller::print_help()

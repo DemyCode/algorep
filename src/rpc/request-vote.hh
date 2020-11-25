@@ -8,6 +8,13 @@
 class RequestVote : public RPC
 {
 public:
+    /**
+     * @brief Message to Request a Vote, sent from Candidate
+     * @param term term of the sender
+     * @param candidate_id rank of the sender
+     * @param last_log_index last log index of the sender
+     * @param last_log_term last log term of the sender
+     */
     ///Constructor
     RequestVote(int term, size_t candidate_id, size_t last_log_index, int last_log_term);
     ///Constructor
@@ -33,7 +40,12 @@ public:
 class RequestVoteResponse : public RPC
 {
 public:
-    ///Constructor
+    /**
+     * @brief Response to RequestVote, send to Candidate
+     * @param term
+     * @param vote_granted_
+     */
+     ////Constructor
     RequestVoteResponse(int term, bool vote_granted_);
     ///Constructor
     RequestVoteResponse(int term, const json& serialized_json);
