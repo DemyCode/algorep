@@ -1,12 +1,15 @@
 #include "debugger.hh"
 
-void debug_write(const std::string& debug_message, float timestamp)
+void debug_write(const std::string& debug_message)
 {
     std::ofstream log_file("debug/debug_" + std::to_string(ProcessInformation::instance().rank_) + ".txt",
                            std::ofstream::out | std::ofstream::app);
     if (log_file.is_open())
     {
-        log_file << timestamp << " : " << debug_message << std::endl;
+        log_file << std::chrono::duration_cast<std::chrono::milliseconds>(
+                        std::chrono::system_clock::now().time_since_epoch())
+                        .count()
+                 << ProcessInformation::instance().rank_ << ": " << debug_message << std::endl;
         log_file.close();
     }
     else

@@ -259,7 +259,7 @@ void Controller::handle_get_state(const std::vector<std::string>& tokens) const
         }
     }
 
-    std::cerr << "Status " << destination_rank << ": " << status << std::endl;
+    std::cerr << "State " << destination_rank << ": " << status << std::endl;
 }
 
 void Controller::handle_sleep(const std::vector<std::string>& tokens)

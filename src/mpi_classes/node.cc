@@ -13,7 +13,6 @@ Node::Node()
     , stop_(false)
     , crash_(false)
     , clock_()
-    , debug_clock_()
     , vote_count_(0)
     , new_entries_()
     , current_term_(0)
@@ -51,8 +50,6 @@ void Node::reset_node()
 
 void Node::run()
 {
-    //    debug_write("Node " + std::to_string(ProcessInformation::instance().rank_) + " is running",
-    //                debug_clock_.check());
     while (!this->stop_)
     {
         Clock::wait(this->speed_);
@@ -78,8 +75,8 @@ void Node::convert_to_candidate()
     // THIS SECTION REFERS TO : RULES FOR SERVER -> CANDIDATES -> ON CONVERSION TO CANDIDATE, START ELECTION
     // THIS FUNCTION ONLY COVERS THE FIRST POINT THE THREE OTHERS ARE HANDLED THROUGH PROBING
 
-    //    debug_write("Node " + std::to_string(ProcessInformation::instance().rank_) + " became candidate.",
-    //                debug_clock_.check());
+    debug_write("Node " + std::to_string(ProcessInformation::instance().rank_) + " became candidate."
+                );
 
     this->state_ = state_t::CANDIDATE;
     this->voted_for_ = ProcessInformation::instance().rank_;
@@ -109,15 +106,13 @@ void Node::convert_to_follower()
 
     this->set_election_timeout();
 
-    //    debug_write("Node " + std::to_string(ProcessInformation::instance().rank_) + " = follower ; election_timeout "
-    //                    + std::to_string(this->election_timeout_),
-    //                debug_clock_.check());
+    debug_write("Node " + std::to_string(ProcessInformation::instance().rank_) + " = follower ; election_timeout "
+                    + std::to_string(this->election_timeout_));
 }
 
 void Node::convert_to_leader()
 {
-    debug_write("Node " + std::to_string(ProcessInformation::instance().rank_) + " became leader.",
-                debug_clock_.check());
+    debug_write("Node " + std::to_string(ProcessInformation::instance().rank_) + " became leader.");
 
     this->state_ = state_t::LEADER;
     this->clock_.reset();
@@ -228,7 +223,7 @@ void Node::leader_check(const std::vector<RPCQuery>& queries)
 {
     if (clock_.check() > this->heartbeat_timeout_)
     {
-        //        debug_write("sending heartbeat", debug_clock_.check());
+        debug_write("sending heartbeat");
         for (size_t rank_offset = 0; rank_offset < ProcessInformation::instance().n_node_; rank_offset++)
         {
             size_t destination_rank = rank_offset + ProcessInformation::instance().node_offset_;
@@ -316,9 +311,8 @@ void Node::candidate_check(const std::vector<RPCQuery>& queries)
         {
             const auto& request_vote_response = std::get<RequestVoteResponse>(query.content_);
             vote_count_ += request_vote_response.vote_granted_ ? 1 : 0;
-            //            debug_write("Node " + std::to_string(ProcessInformation::instance().rank_) + " has "
-            //                            + std::to_string(vote_count_) + " vote.",
-            //                        debug_clock_.check());
+            debug_write("Node " + std::to_string(ProcessInformation::instance().rank_) + " has "
+                            + std::to_string(vote_count_) + " vote.");
         }
         else if (query.type_ == RPC::RPC_TYPE::APPEND_ENTRIES)
         {
@@ -337,8 +331,7 @@ void Node::candidate_check(const std::vector<RPCQuery>& queries)
 
 void Node::handle_append_entries(const RPCQuery& query)
 {
-    //    debug_write("Node " + std::to_string(ProcessInformation::instance().rank_) + " handles AERPC",
-    //                debug_clock_.check());
+    debug_write("Node " + std::to_string(ProcessInformation::instance().rank_) + " handles AERPC");
     const auto& append_entries = std::get<AppendEntries>(query.content_);
 
     // 1 & 2

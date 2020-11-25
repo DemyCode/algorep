@@ -6,4 +6,4 @@
 
 #include "mpi_classes/process-information.hh"
 
-void debug_write(const std::string& debug_message, float timestamp);
+void debug_write(const std::string& debug_message);
