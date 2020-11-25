@@ -118,14 +118,17 @@ void Node::convert_to_leader()
 {
     debug_write("Node " + std::to_string(ProcessInformation::instance().rank_) + " became leader.",
                 debug_clock_.check());
+
     this->state_ = state_t::LEADER;
     this->clock_.reset();
-    // Envoyer heartbeat à tous les serveurs
-    for (size_t i = 0; i < ProcessInformation::instance().n_node_; i++)
+
+    for (size_t server_rank_offset = 0; server_rank_offset < ProcessInformation::instance().n_node_;
+         server_rank_offset++)
     {
-        this->next_index_.at(i) = this->log_.size();
-        this->match_index_.at(i) = -1;
+        this->next_index_.at(server_rank_offset) = this->log_.size();
+        this->match_index_.at(server_rank_offset) = -1;
     }
+
     AppendEntries empty_append(
         this->current_term_, ProcessInformation::instance().rank_, -1, -1, std::vector<Entry>(), this->commit_index_);
     send_to_all(ProcessInformation::instance().node_offset_, ProcessInformation::instance().n_node_, empty_append, 0);
@@ -138,7 +141,7 @@ void Node::all_server_check(const std::vector<RPCQuery>& queries)
     {
         last_applied_ += 1;
         std::ofstream log_file("log" + std::to_string(ProcessInformation::instance().rank_) + ".txt");
-        if (log_file.is_open())
+        if (log_file.good())
         {
             log_file << this->log_.at(this->last_applied_).command_ << std::endl;
             log_file.close();
@@ -228,9 +231,9 @@ void Node::leader_check(const std::vector<RPCQuery>& queries)
         //        debug_write("sending heartbeat", debug_clock_.check());
         for (size_t rank_offset = 0; rank_offset < ProcessInformation::instance().n_node_; rank_offset++)
         {
-            size_t destionation_rank = rank_offset + ProcessInformation::instance().node_offset_;
+            size_t destination_rank = rank_offset + ProcessInformation::instance().node_offset_;
 
-            if (destionation_rank == ProcessInformation::instance().rank_)
+            if (destination_rank == ProcessInformation::instance().rank_)
                 continue;
 
             if ((int)this->log_.size() - 1 >= next_index_.at(rank_offset))
@@ -242,7 +245,7 @@ void Node::leader_check(const std::vector<RPCQuery>& queries)
                                            this->log_.at(this->next_index_.at(rank_offset) - 1).term_,
                                            slice_vector(this->log_, this->next_index_.at(rank_offset)),
                                            this->commit_index_);
-                send_message(append_entry, destionation_rank);
+                send_message(append_entry, destination_rank);
             }
             else
             {
@@ -252,7 +255,7 @@ void Node::leader_check(const std::vector<RPCQuery>& queries)
                                            -1,
                                            std::vector<Entry>(), // empty entries means heartbeat in response
                                            this->commit_index_);
-                send_message(empty_append, destionation_rank);
+                send_message(empty_append, destination_rank);
             }
         }
 
@@ -264,10 +267,9 @@ void Node::leader_check(const std::vector<RPCQuery>& queries)
         if (query.type_ == RPC::RPC_TYPE::NEW_ENTRY)
         {
             const auto& new_entry = std::get<NewEntry>(query.content_);
-            Entry res_entry = Entry(this->current_term_, new_entry.entry_.command_);
 
-            this->log_.push_back(res_entry);
-            this->new_entries_.push(query);
+            this->log_.emplace_back(this->current_term_, new_entry.entry_.command_);
+            this->new_entries_.emplace(query);
         }
         else if (query.type_ == RPC::RPC_TYPE::APPEND_ENTRIES_RESPONSE)
         {
@@ -284,19 +286,25 @@ void Node::leader_check(const std::vector<RPCQuery>& queries)
         }
     }
 
-    int N = commit_index_ + 1;
-    size_t majority = 1;
+    int N = this->commit_index_ + 1;
+    size_t majority = 0;
 
-    for (int index_i : this->match_index_)
+    for (size_t rank_offset = 0; rank_offset < ProcessInformation::instance().n_node_; rank_offset++)
     {
-        if (index_i >= N)
+        if (ProcessInformation::instance().rank_ == rank_offset + ProcessInformation::instance().node_offset_)
+        {
+            majority += 1;
+            continue;
+        }
+
+        if (this->match_index_.at(rank_offset) >= N)
             majority += 1;
     }
 
-    if (N > this->commit_index_ && majority >= ProcessInformation::instance().n_node_ / 2
+    if (N > this->commit_index_ && majority > ProcessInformation::instance().n_node_ / 2
         && this->log_.at(N).term_ == current_term_)
     {
-        commit_index_ = N;
+        this->commit_index_ = N;
     }
 }
 
@@ -358,19 +366,19 @@ void Node::handle_append_entries(const RPCQuery& query)
     std::vector<Entry> new_log;
     int i = 0;
     for (; i < append_entries.prev_log_index_ + 1; i++)
-        new_log.push_back(log_.at(i));
+        new_log.push_back(this->log_.at(i));
 
     // 3 & 4.
     for (; i < (int)append_entries.entries_.size() + (append_entries.prev_log_index_ + 1); i++)
     {
-        if (log_.at(i).term_ != append_entries.entries_.at(i - (append_entries.prev_log_index_ + 1)).term_)
+        if (this->log_.at(i).term_ != append_entries.entries_.at(i - (append_entries.prev_log_index_ + 1)).term_)
             break;
         new_log.push_back(append_entries.entries_.at(append_entries.prev_log_index_ + i));
     }
     this->log_.swap(new_log);
     // 5.
-    if (append_entries.leader_commit_ > commit_index_)
-        commit_index_ = std::min(append_entries.leader_commit_, (int)append_entries.entries_.size() - 1);
+    if (append_entries.leader_commit_ > this->commit_index_)
+        this->commit_index_ = std::min(append_entries.leader_commit_, (int)append_entries.entries_.size() - 1);
 }
 
 void Node::handle_request_vote(const RPCQuery& query)
