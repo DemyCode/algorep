@@ -1,0 +1,21 @@
+name: github pages
+
+on:
+  push: [push]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Doxygen Install
+        run: sudo apt install doxygen graphviz
+
+      - name: Doxygen Create
+        run: make doc
+
+      - name: Deploy
+          uses: peaceiris/actions-gh-pages@v3
+          with:
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            publish_dir: ./docs

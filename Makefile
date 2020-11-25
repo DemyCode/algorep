@@ -1,5 +1,8 @@
 .PHONY: build test debug
 
+doc:
+	doxygen Doxyfile
+
 build:
 	mkdir -p build
 	cd build; cmake -DCMAKE_BUILD_TYPE=Release ..
