@@ -1,0 +1,7 @@
+0
+2
+no
+get_state 1
+get_state 2
+stop 1
+stop 2
