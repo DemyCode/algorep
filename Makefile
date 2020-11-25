@@ -1,8 +1,5 @@
 .PHONY: doc build test debug
 
-doc:
-	doxygen Doxyfile
-
 build:
 	mkdir -p build
 	cd build; cmake -DCMAKE_BUILD_TYPE=Release ..
@@ -16,6 +13,9 @@ debug:
 
 test: build
 	./tests/run_tests.sh $(filter-out $@,$(MAKECMDGOALS))
+
+doc:
+	doxygen Doxyfileg
 
 %:
 	@:
