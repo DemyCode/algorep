@@ -438,6 +438,11 @@ void Node::handle_message(const RPCQuery& query)
             this->crash_ = false;
             break;
 
+        case Message::MESSAGE_TYPE::SERVER_TIMEOUT:
+            if (this->state_ == state_t::FOLLOWER)
+                this->convert_to_candidate();
+            break;
+
         default:
             success = false;
             break;
