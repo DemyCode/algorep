@@ -6,6 +6,7 @@ entry 1 test2
 entry 1 test3
 start 1
 wait_finish 1
+sleep 350
 stop 1
 stop 2
 stop 3

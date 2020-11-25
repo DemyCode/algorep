@@ -1,11 +1,13 @@
-1
+2
 3
-no
-entry 1 test
+yes
 start 1
+start 2
 wait_finish 1
+wait_finish 2
 sleep 350
 stop 1
 stop 2
 stop 3
 stop 4
+stop 5

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-TIMEOUT=2
+TIMEOUT=5
 
 RED='\033[0;31m'
 LIGHT_GREEN='\033[0;92m'

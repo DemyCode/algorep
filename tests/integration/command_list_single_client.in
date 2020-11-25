@@ -1,7 +1,6 @@
 1
 3
-no
-entry 1 test
+yes
 start 1
 wait_finish 1
 sleep 350
