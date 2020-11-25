@@ -13,6 +13,5 @@ if __name__ == '__main__':
     lines.sort()
     output = open('debug/merged.txt', 'w')
     for line in lines:
-        print(line[1], end='')
         output.write(line[1])
     output.close()
