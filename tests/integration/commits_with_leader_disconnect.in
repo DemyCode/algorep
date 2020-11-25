@@ -13,6 +13,7 @@ print_local_log 4
 print_local_log 5
 print_local_log 6
 crash 2
+sleep 350
 entry 1 test2
 wait_finish 1
 sleep 250
@@ -22,7 +23,7 @@ print_local_log 4
 print_local_log 5
 print_local_log 6
 recover 2
-sleep 600
+sleep 650
 get_state 2
 entry 1 test3
 wait_finish 1

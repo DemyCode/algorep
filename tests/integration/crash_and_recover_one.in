@@ -2,6 +2,8 @@
 2
 no
 crash 1
+sleep 350
 recover 1
+sleep 650
 stop 1
 stop 2

@@ -2,11 +2,17 @@
 3
 no
 crash 1
+sleep 350
 crash 2
+sleep 350
 crash 3
+sleep 350
 recover 1
+sleep 650
 recover 2
+sleep 650
 recover 3
+sleep 650
 stop 1
 stop 2
 stop 3

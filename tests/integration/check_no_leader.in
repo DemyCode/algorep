@@ -2,6 +2,8 @@
 2
 no
 get_state 1
+sleep 350
 get_state 2
+sleep 350
 stop 1
 stop 2
