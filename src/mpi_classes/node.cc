@@ -472,12 +472,12 @@ void Node::handle_message(const RPCQuery& query)
             break;
 
         case Message::MESSAGE_TYPE::SERVER_PRINT_LOCAL_LOG:
-            std::cout << ProcessInformation::instance().rank_;
+            std::cerr << ProcessInformation::instance().rank_;
 
             for (const auto& log : this->log_)
-                std::cout << " [" << log.term_ << ", \"" << log.command_ << "\"]";
+                std::cerr << " [" << log.term_ << ", \"" << log.command_ << "\"]";
 
-            std::cout << std::endl;
+            std::cerr << std::endl;
             break;
 
         default:
