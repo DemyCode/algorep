@@ -5,11 +5,17 @@
 class GetState : public RPC
 {
 public:
-    ///Constructor
+    /** @brief Constructor
+     ** @param process_rank rank of the process to send the message to
+    */
     GetState(int process_rank);
-    ///Constructor
+    /** @brief Constructor
+     ** @param serialized_json content of the message as json
+    */
     GetState(const json& serialized_json);
-    ///Constructor
+    /** @brief Constructor
+     ** @param serialized content of the message serialized as string
+    */
     GetState(const std::string& serialized);
 
     /** @brief Serializes the message in json
@@ -32,11 +38,17 @@ public:
         STOPPED
     };
 
-    /// Constructor
+    /** @brief Constructor
+     ** @param state state of the process
+    */
     GetStateResponse(STATE state);
-    /// Constructor
+    /** @brief Constructor
+     ** @param serialized_json content of the message as json
+    */
     GetStateResponse(const json& serialized_json);
-    /// Constructor
+    /** @brief Constructor
+     ** @param serialized content of the message serialized as string
+    */
     GetStateResponse(const std::string& serialized);
 
     /** @brief serializes the message in json
