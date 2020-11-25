@@ -1,6 +1,8 @@
 2 [1, "test"]
 3 [1, "test"]
 4 [1, "test"]
+State 3: STOPPED
 2 [1, "test"]
-3 [1, "test"]
 4 [1, "test"]
+State 3: FOLLOWER
+3 [1, "test"]

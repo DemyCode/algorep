@@ -12,11 +12,14 @@ print_local_log 3
 print_local_log 4
 crash 3
 sleep 350
+get_state 3
 print_local_log 2
-print_local_log 3
 print_local_log 4
 recover 3
 sleep 500
+get_state 3
+sleep 350
+print_local_log 3
 stop 1
 stop 2
 stop 3

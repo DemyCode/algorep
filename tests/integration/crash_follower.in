@@ -12,6 +12,8 @@ print_local_log 3
 print_local_log 4
 crash 3
 sleep 350
+get_state 3
+sleep 350
 print_local_log 2
 print_local_log 3
 print_local_log 4

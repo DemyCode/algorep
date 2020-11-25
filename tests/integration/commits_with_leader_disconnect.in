@@ -14,10 +14,11 @@ print_local_log 5
 print_local_log 6
 crash 2
 sleep 350
+get_state 2
+sleep 365
 entry 1 test2
 wait_finish 1
 sleep 250
-print_local_log 2
 print_local_log 3
 print_local_log 4
 print_local_log 5
