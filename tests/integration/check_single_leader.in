@@ -2,6 +2,7 @@
 3
 no
 timeout 1
+sleep 350
 get_state 1
 get_state 2
 get_state 3
