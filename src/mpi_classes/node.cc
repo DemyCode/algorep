@@ -479,7 +479,7 @@ void Node::handle_message(const RPCQuery& query)
             std::cerr << ProcessInformation::instance().rank_;
 
             for (const auto& log : this->log_)
-                std::cerr << " [" << log.term_ << ", \"" << log.command_ << "\"]";
+                std::cerr << " \"" << log.command_ << "\"";
 
             std::cerr << std::endl;
             break;
