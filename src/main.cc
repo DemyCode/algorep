@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
     }
     else if (rank <= n_client)
     {
-        std::cout << "Start client, rank: " << rank << std::endl;
+        // std::cout << "Start client, rank: " << rank << std::endl;
 
         // CLIENT
         Client client;
@@ -99,7 +99,7 @@ int main(int argc, char* argv[])
     }
     else
     {
-        std::cout << "Start server, rank: " << rank << std::endl;
+        // std::cout << "Start server, rank: " << rank << std::endl;
         // SERVER
         Node node;
         node.run();
