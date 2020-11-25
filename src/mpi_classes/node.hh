@@ -20,12 +20,6 @@ class Node
 public:
     using state_t = GetStateResponse::STATE;
 
-    enum ping
-    {
-        REQUESTVOTE,
-        VOTE
-    };
-
     Node();
     void run();
 
@@ -34,7 +28,7 @@ private:
     void reset_node();
 
     void all_server_check(const std::vector<RPCQuery>& queries);
-    void follower_check(const std::vector<RPCQuery>& queries);
+    void follower_check();
     void leader_check(const std::vector<RPCQuery>& queries);
     void candidate_check(const std::vector<RPCQuery>& queries);
 
@@ -44,9 +38,11 @@ private:
 
     void handle_append_entries(const RPCQuery& query);
     void handle_request_vote(const RPCQuery& query);
+    void handle_message(const RPCQuery& query);
 
     state_t state_;
     float election_timeout_;
+    float heartbeat_timeout_;
     Message::SPEED_TYPE speed_;
     bool stop_;
     bool crash_;
@@ -62,7 +58,7 @@ private:
     // latest term server has seen (initialized to 0 on first boot, increases monotonically)
     int current_term_;
     //  candidate_id that received vote in current term (or 0 if none)
-    int voted_for_;
+    size_t voted_for_;
     // log entries; each entry contains command for state machine, and term when entry was received by leader (first
     // index is 1)
     std::vector<Entry> log_;

@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
     {
         std::cout << "Start server, rank: " << rank << std::endl;
         // SERVER
-        Node node = Node();
+        Node node;
         node.run();
     }
 

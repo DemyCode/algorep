@@ -1,6 +1,6 @@
-#include <utility>
-
 #include "entry.hh"
+
+#include <utility>
 
 Entry::Entry(int term, std::string command)
     : term_(term)
