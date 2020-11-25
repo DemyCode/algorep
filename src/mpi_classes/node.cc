@@ -225,7 +225,6 @@ void Node::leader_check(const std::vector<RPCQuery>& queries)
 {
     if (clock_.check() > this->heartbeat_timeout_)
     {
-        debug_write("Send heartbeat");
         for (size_t rank_offset = 0; rank_offset < ProcessInformation::instance().n_node_; rank_offset++)
         {
             size_t destination_rank = rank_offset + ProcessInformation::instance().node_offset_;
@@ -235,6 +234,7 @@ void Node::leader_check(const std::vector<RPCQuery>& queries)
 
             if ((int)this->log_.size() - 1 >= next_index_.at(rank_offset))
             {
+                debug_write("Send Append Entries to " + std::to_string(destination_rank));
                 // send AppendEntries RPC with log entries starting at nextIndex
                 AppendEntries append_entry(this->current_term_,
                                            ProcessInformation::instance().rank_,
@@ -246,6 +246,7 @@ void Node::leader_check(const std::vector<RPCQuery>& queries)
             }
             else
             {
+                debug_write("Send heartbeat to " + std::to_string(destination_rank));
                 AppendEntries empty_append(this->current_term_,
                                            ProcessInformation::instance().rank_,
                                            -1,
@@ -264,6 +265,7 @@ void Node::leader_check(const std::vector<RPCQuery>& queries)
         if (query.type_ == RPC::RPC_TYPE::NEW_ENTRY)
         {
             const auto& new_entry = std::get<NewEntry>(query.content_);
+            debug_write("Receive Message: New Entry");
 
             this->log_.emplace_back(this->current_term_, new_entry.entry_.command_);
             this->new_entries_.emplace(query);
@@ -443,6 +445,15 @@ void Node::handle_message(const RPCQuery& query)
         case Message::MESSAGE_TYPE::SERVER_TIMEOUT:
             if (this->state_ == state_t::FOLLOWER)
                 this->convert_to_candidate();
+            break;
+
+        case Message::MESSAGE_TYPE::SERVER_PRINT_LOCAL_LOG:
+            std::cout << ProcessInformation::instance().rank_;
+
+            for (const auto& log : this->log_)
+                std::cout << " [" << log.term_ << ", \"" << log.command_ << "\"]";
+
+            std::cout << std::endl;
             break;
 
         default:

@@ -36,6 +36,7 @@ void Controller::print_help()
         << std::endl
         << " - wait_finish [client_rank]         - wait that a client has send all his messages" << std::endl
         << " - get_state [server_rank]           - get the state of the server_rank" << std::endl
+        << " - print_local_log [server_rank]     - print the local log of the server_rank" << std::endl
         << " - sleep [milliseconds]              - sleep the current process for milliseconds" << std::endl;
 }
 
@@ -298,6 +299,24 @@ void Controller::handle_timeout(const std::vector<std::string>& tokens)
     this->send_message(destination_rank, Message::MESSAGE_TYPE::SERVER_TIMEOUT);
 }
 
+void Controller::handle_print_local_log(const std::vector<std::string>& tokens)
+{
+    if (tokens.size() <= 1)
+    {
+        std::cerr << "Missing arguments" << std::endl;
+        return;
+    }
+
+    int destination_rank = parse_int(tokens[1]);
+    if (!ProcessInformation::instance().is_rank_node(destination_rank))
+    {
+        std::cerr << "Invalid rank: " << tokens[1] << std::endl;
+        return;
+    }
+
+    this->send_message(destination_rank, Message::MESSAGE_TYPE::SERVER_PRINT_LOCAL_LOG);
+}
+
 void Controller::run()
 {
     std::cout << "> ";
@@ -331,6 +350,8 @@ void Controller::run()
                 this->handle_wait_finish(tokens);
             else if (tokens[0] == "get_state")
                 this->handle_get_state(tokens);
+            else if (tokens[0] == "print_local_log")
+                this->handle_print_local_log(tokens);
             else if (tokens[0] == "sleep")
                 handle_sleep(tokens);
             else

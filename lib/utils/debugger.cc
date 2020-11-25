@@ -11,8 +11,8 @@ void debug_write(const std::string& debug_message)
         log_file << std::chrono::duration_cast<std::chrono::milliseconds>(
                         std::chrono::system_clock::now().time_since_epoch())
                         .count()
-                 << ProcessInformation::instance().rank_ << " - " << ProcessInformation::instance().rank_ << " - "
-                 << debug_message << std::endl;
+                 << ProcessInformation::instance().rank_ << " - "
+                 << debug_message << " - " << ProcessInformation::instance().rank_ << std::endl;
         log_file.close();
     }
     else

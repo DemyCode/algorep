@@ -11,6 +11,7 @@ public:
         CLIENT_START,
         CLIENT_WAIT_FINISH,
         SERVER_TIMEOUT,
+        SERVER_PRINT_LOCAL_LOG,
         PROCESS_SET_SPEED,
         PROCESS_CRASH,
         PROCESS_RECOVER,
