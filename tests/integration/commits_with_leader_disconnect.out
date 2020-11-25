@@ -1,0 +1,16 @@
+2 [1, "test"]
+3 [1, "test"]
+4 [1, "test"]
+5 [1, "test"]
+6 [1, "test"]
+2
+3 [1, "test"] [2, "test2"]
+4 [1, "test"] [2, "test2"]
+5 [1, "test"] [2, "test2"]
+6 [1, "test"] [2, "test2"]
+State 2: FOLLOWER
+2 [1, "test"] [2, "test2"] [2, "test3"]
+3 [1, "test"] [2, "test2"] [2, "test3"]
+4 [1, "test"] [2, "test2"] [2, "test3"]
+5 [1, "test"] [2, "test2"] [2, "test3"]
+6 [1, "test"] [2, "test2"] [2, "test3"]

@@ -1,0 +1,40 @@
+1
+5
+no
+timeout 2
+sleep 350
+entry 1 test
+start 1
+wait_finish 1
+sleep 350
+print_local_log 2
+print_local_log 3
+print_local_log 4
+print_local_log 5
+print_local_log 6
+crash 2
+entry 1 test2
+wait_finish 1
+sleep 250
+print_local_log 2
+print_local_log 3
+print_local_log 4
+print_local_log 5
+print_local_log 6
+recover 2
+sleep 600
+get_state 2
+entry 1 test3
+wait_finish 1
+sleep 250
+print_local_log 2
+print_local_log 3
+print_local_log 4
+print_local_log 5
+print_local_log 6
+stop 1
+stop 2
+stop 3
+stop 4
+stop 5
+stop 6
