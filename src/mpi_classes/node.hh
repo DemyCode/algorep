@@ -21,23 +21,91 @@ public:
     using state_t = GetStateResponse::STATE;
 
     Node();
+
+    /**
+     * @brief Main function for the node that check the state of a node in order to decide what to do with the messages received
+     * 
+     */
     void run();
 
 private:
+
+    /**
+     * @brief Set the election timeout for the node between 150ms and 300ms
+     * 
+     */
     void set_election_timeout();
+
+    /**
+     * @brief Used to reset the node attributes when the node crash
+     * 
+     */
     void reset_node();
 
+
+    /**
+     * @brief Check the type of incoming query regardless the type of the node and decide what to do with this node
+     * 
+     * @param queries 
+     */ 
     void all_server_check(const std::vector<RPCQuery>& queries);
+
+    /**
+     * @brief If the follower didn't receive any heartbeat for at least more than the election timeout call the convert_to_candidate function
+     * 
+     */
     void follower_check();
+
+    /**
+     * @brief This function call the log replication and see if it worked on a majority of the followers
+     * 
+     * @param queries 
+     */
     void leader_check(const std::vector<RPCQuery>& queries);
+
+    /**
+     * @brief This function start an election, vote for himself send a RequestVote to all other node and check the result of the election
+     * 
+     * @param queries 
+     */
     void candidate_check(const std::vector<RPCQuery>& queries);
 
+    /**
+     * @brief  Convert a node to a follower
+     *
+     */
     void convert_to_follower();
+
+    /**
+     * @brief Convert a node to a candidate
+     * 
+     */
     void convert_to_candidate();
+
+    /**
+     * @brief Convert a node to a Leader and send a heartbeat to the other nodes
+     */
     void convert_to_leader();
 
+    /**
+     * @brief This function handle the log replication
+     * 
+     * @param query 
+     */
     void handle_append_entries(const RPCQuery& query);
+
+    /**
+     * @brief This function handle the vote for an election in order to decide a new Leader
+     * 
+     * @param query 
+     */
     void handle_request_vote(const RPCQuery& query);
+
+    /**
+     * @brief This function handle the incoming messages and decide what to do depending on them
+     *
+     * @param query 
+     */
     void handle_message(const RPCQuery& query);
 
     state_t state_;
