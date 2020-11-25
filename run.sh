@@ -115,4 +115,4 @@ if [ "${generate_command_list}" = "yes" ]; then
 fi
 echo ""
 
-mpirun -np ${total_size} --oversubscribe ./"${build_path}/${EXEC_NAME}" "${client_count}" "${server_count}" ${command_list_files}
+mpirun -np ${total_size} ./"${build_path}/${EXEC_NAME}" "${client_count}" "${server_count}" ${command_list_files}
