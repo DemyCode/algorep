@@ -8,7 +8,7 @@ void debug_write(const std::string& debug_message)
                            std::ofstream::out | std::ofstream::app);
     if (log_file.is_open())
     {
-        log_file << std::chrono::duration_cast<std::chrono::milliseconds>(
+        log_file << std::chrono::duration_cast<std::chrono::nanoseconds>(
                         std::chrono::system_clock::now().time_since_epoch())
                         .count()
                  << ProcessInformation::instance().rank_ << " - "

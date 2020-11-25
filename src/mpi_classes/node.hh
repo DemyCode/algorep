@@ -47,7 +47,6 @@ private:
     bool stop_;
     bool crash_;
     Clock clock_;
-    Clock debug_clock_;
     size_t vote_count_;
 
     std::queue<RPCQuery> new_entries_;

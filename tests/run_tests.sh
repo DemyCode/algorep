@@ -31,7 +31,8 @@ run_integration_test()
     commands=$(tail -n +4 "${test_file_input}")
 
     # Run test
-    echo "${commands}" | timeout "${TIMEOUT}" ./run.sh "${client_count}" "${server_count}" ${generate_command_list} 2> /tmp/raft_output 1> /dev/null
+    rm -f /tmp/raft_output
+    echo "${commands}" | timeout "${TIMEOUT}" ./run.sh "${client_count}" "${server_count}" "${generate_command_list}" 2> /tmp/raft_output 1> /dev/null
     output="$?"
 
     # Exit if the test has timeout
@@ -166,8 +167,5 @@ integration_tests="$(find "${integration_folder}" -type f -a -name "*.in" -exec 
 # Run integration tests
 run_integration_tests "${integration_folder}" "${integration_tests}"
 fail="$?"
-
-# Clean temp file
-rm -f /tmp/raft_output
 
 exit "${fail}"

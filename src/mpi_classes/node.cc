@@ -90,7 +90,7 @@ void Node::convert_to_candidate()
     int last_log_term = -1;
 
     if (!log_.empty())
-        last_log_term = log_.at(log_.size() - 1).term_;
+        last_log_term = log_.back().term_;
 
     RequestVote request_vote(current_term_, ProcessInformation::instance().rank_, log_.size() - 1, last_log_term);
     send_to_all(ProcessInformation::instance().node_offset_, ProcessInformation::instance().n_node_, request_vote);
@@ -228,18 +228,17 @@ void Node::leader_check(const std::vector<RPCQuery>& queries)
         for (size_t rank_offset = 0; rank_offset < ProcessInformation::instance().n_node_; rank_offset++)
         {
             size_t destination_rank = rank_offset + ProcessInformation::instance().node_offset_;
-
             if (destination_rank == ProcessInformation::instance().rank_)
                 continue;
 
-            if ((int)this->log_.size() - 1 >= next_index_.at(rank_offset))
+            if ((int)this->log_.size() - 1 >= this->next_index_.at(rank_offset))
             {
                 debug_write("Send Append Entries to " + std::to_string(destination_rank));
                 // send AppendEntries RPC with log entries starting at nextIndex
                 AppendEntries append_entry(this->current_term_,
                                            ProcessInformation::instance().rank_,
-                                           this->next_index_.at(rank_offset) - 1,
-                                           this->log_.at(this->next_index_.at(rank_offset) - 1).term_,
+                                           this->next_index_.at(rank_offset),
+                                           this->log_.at(this->next_index_.at(rank_offset)).term_,
                                            slice_vector(this->log_, this->next_index_.at(rank_offset)),
                                            this->commit_index_);
                 send_message(append_entry, destination_rank);
