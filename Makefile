@@ -1,4 +1,4 @@
-.PHONY: build test debug
+.PHONY: doc build test debug
 
 doc:
 	doxygen Doxyfile
