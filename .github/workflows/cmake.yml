@@ -23,7 +23,7 @@ jobs:
 
     - name: Installing Repos
       shell: bash
-      run: sudo apt install build-essential cmake libmpich-dev openmpi-bin -y
+      run: sudo apt install build-essential cmake libopenmpi-dev -y
 
     - name: Create Build Environment
       # Some projects don't allow in-source building, so create a separate build directory
