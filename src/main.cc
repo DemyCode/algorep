@@ -22,6 +22,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    // Parse the arguments
     int n_client = parse_int(argv[1]);
     int n_node = parse_int(argv[2]);
 
@@ -37,6 +38,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    // Parse the command list files
     if (argc >= 4)
     {
         if (argc - 3 != n_client)
@@ -45,6 +47,7 @@ int main(int argc, char* argv[])
             return 1;
         }
 
+        // Check that the command list file is valid for each client
         for (int i = 0; i < n_client; i++)
         {
             std::ifstream ifile;
@@ -58,16 +61,19 @@ int main(int argc, char* argv[])
         }
     }
 
+    // Start the MPI instances
     int rank;
     int size;
 
-    MPI_Init(&argc, &argv);
     std::atexit(exit);
+    MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
+    // Set the different information in the singleton
     ProcessInformation::instance().set_information(rank, n_client, 1, n_node, n_client + 1, size);
 
+    // Check that the size is coherent with the parameters
     if (size != n_node + n_client + 1)
     {
         std::cerr << "Usage: mpirun -np size ./raft n_client n_server [path_command_list_client_1 "
@@ -77,30 +83,28 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    // Controller
     if (rank == 0)
     {
         std::cout << "Start controller, rank: " << rank << std::endl;
 
-        // CONSOLE
         Controller controller;
         controller.run();
     }
+    // Client
     else if (rank <= n_client)
     {
-        // std::cout << "Start client, rank: " << rank << std::endl;
-
-        // CLIENT
         Client client;
 
+        // Add the command list files if they are present
         if (argc >= 4)
             client.add_command_list(argv[3 + rank - 1]);
 
         client.run();
     }
+    // Server
     else
     {
-        // std::cout << "Start server, rank: " << rank << std::endl;
-        // SERVER
         Node node;
         node.run();
     }
