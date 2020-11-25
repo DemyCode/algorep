@@ -1,6 +1,6 @@
 #!/bin/sh
 
-TIMEOUT=5
+TIMEOUT=10
 
 RED='\033[0;31m'
 LIGHT_GREEN='\033[0;92m'
@@ -57,6 +57,7 @@ run_integration_test()
 
         echo "       output"
         echo "${diff}"
+        echo ""
     fi
 
     # Check Log
@@ -110,6 +111,7 @@ run_integration_test()
 
                 echo "       log server ${server_rank}"
                 echo "${diff}"
+                echo ""
             fi
 
             # Clean log file for the server
@@ -125,8 +127,6 @@ run_integration_test()
     if [ "${res}" -eq 0 ]; then
         echo "${GREEN}${INVERT}[  OK   ]${NC}${INVERT} - ${test_name}${NC}"
         res=0
-    else
-        echo ""
     fi
 
     return "${res}"

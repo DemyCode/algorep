@@ -45,9 +45,6 @@ void Node::reset_node()
     this->new_entries_ = std::queue<RPCQuery>();
     this->current_term_ = 0;
     this->voted_for_ = 0;
-    this->log_.clear();
-    this->commit_index_ = -1;
-    this->last_applied_ = -1;
     this->next_index_ = std::vector<int>(ProcessInformation::instance().n_node_, 0);
     this->match_index_ = std::vector<int>(ProcessInformation::instance().n_node_, -1);
 }
@@ -348,8 +345,9 @@ void Node::candidate_check(const std::vector<RPCQuery>& queries)
 
 void Node::handle_append_entries(const RPCQuery& query)
 {
-    debug_write("Receive Message: Append Entries");
     const auto& append_entries = std::get<AppendEntries>(query.content_);
+
+    debug_write("Receive Message: Append Entries");
 
     // 1 & 2
     if (append_entries.term_ < this->current_term_)
@@ -359,7 +357,8 @@ void Node::handle_append_entries(const RPCQuery& query)
     }
 
     if (append_entries.prev_log_index_ != -1
-        && this->log_.at(append_entries.prev_log_index_).term_ != append_entries.prev_log_term_)
+        && (append_entries.prev_log_index_ >= (int)this->log_.size()
+            || this->log_.at(append_entries.prev_log_index_).term_ != append_entries.prev_log_term_))
     {
         send_message(AppendEntriesResponse(append_entries.term_, false), append_entries.leader_id_);
         return;
