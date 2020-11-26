@@ -1,0 +1,15 @@
+digraph "src/mpi_classes/process-information.cc"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node0 [label="src/mpi_classes/process\l-information.cc",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node0 -> Node1 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node1 [label="process-information.hh",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$process-information_8hh.html"];
+  Node1 -> Node2 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="cstddef",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+  Node1 -> Node3 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="utils/singleton.hh",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$singleton_8hh.html"];
+  Node3 -> Node4 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="utils/singleton.hxx",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$singleton_8hxx.html"];
+  Node4 -> Node3 [color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+}

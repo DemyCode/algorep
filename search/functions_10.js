@@ -1,0 +1,14 @@
+var searchData=
+[
+  ['rbegin',['rbegin',['../classnlohmann_1_1basic__json.html#aff8e38cd973bc94557fa8d36433c0e4c',1,'nlohmann::basic_json::rbegin() noexcept'],['../classnlohmann_1_1basic__json.html#aab1329f44c8301b7679962726a043549',1,'nlohmann::basic_json::rbegin() const noexcept']]],
+  ['receive_5fall_5fmessages',['receive_all_messages',['../lib-rpc_8cc.html#a7f322b14ccad7fa5c54914dfa4658e9f',1,'receive_all_messages(size_t offset, size_t n_node, std::vector&lt; RPCQuery &gt; &amp;queries, int tag):&#160;lib-rpc.cc'],['../lib-rpc_8hh.html#aabe8dd865e46b85717de7be59b32ae28',1,'receive_all_messages(size_t offset, size_t n_node, std::vector&lt; RPCQuery &gt; &amp;queries, int tag=0):&#160;lib-rpc.cc']]],
+  ['receive_5fmessage',['receive_message',['../lib-rpc_8cc.html#ae3b5af29c87e6d12e3ba22d32018d08b',1,'receive_message(size_t source, int tag):&#160;lib-rpc.cc'],['../lib-rpc_8hh.html#adb8d495f6e0cc55ef925af75cda91e19',1,'receive_message(size_t source, int tag=0):&#160;lib-rpc.cc']]],
+  ['reinterpret_5fbits',['reinterpret_bits',['../namespacenlohmann_1_1detail_1_1dtoa__impl.html#a1c5d30eb51e5e994a3f48bde104d2ce8',1,'nlohmann::detail::dtoa_impl']]],
+  ['rend',['rend',['../classnlohmann_1_1basic__json.html#a7a328b29b290cc300345376c54f618cb',1,'nlohmann::basic_json::rend() noexcept'],['../classnlohmann_1_1basic__json.html#a2e4cbf41d593d41847b90aea55e5e84d',1,'nlohmann::basic_json::rend() const noexcept']]],
+  ['requestvote',['RequestVote',['../classRequestVote.html#a51c0285f43ce7f90e407f255847ae34f',1,'RequestVote::RequestVote(int term, size_t candidate_id, size_t last_log_index, int last_log_term)'],['../classRequestVote.html#a815f0e186bf3474d9b14654a21969929',1,'RequestVote::RequestVote(int term, const json &amp;serialized)'],['../classRequestVote.html#a4490e51904f5085d5699661ca087d4a7',1,'RequestVote::RequestVote(int term, const std::string &amp;serialized)']]],
+  ['requestvoteresponse',['RequestVoteResponse',['../classRequestVoteResponse.html#a22f4bb9e92c10e1f33922e012cebe13b',1,'RequestVoteResponse::RequestVoteResponse(int term, bool vote_granted_)'],['../classRequestVoteResponse.html#a5979a2f729c31af40556d942d879c7af',1,'RequestVoteResponse::RequestVoteResponse(int term, const json &amp;serialized_json)'],['../classRequestVoteResponse.html#abe7f932902b29ce2dccd9ec3d0064152',1,'RequestVoteResponse::RequestVoteResponse(int term, const std::string &amp;serialized)']]],
+  ['reset',['reset',['../classClock.html#a0ab5423b0a997aa13d7b6131c46d1358',1,'Clock']]],
+  ['rpc',['RPC',['../classRPC.html#a639f92dad4044fb222e27425e215fe01',1,'RPC']]],
+  ['rpcquery',['RPCQuery',['../classRPCQuery.html#a5b30ac67aa74392f10e312dfea1657d7',1,'RPCQuery']]],
+  ['run',['run',['../classClient.html#ae0bc335d720265d4d6e8a72cf7a2a9aa',1,'Client::run()'],['../classController.html#a692f0f5dc600cdcb79786a31cf283ce1',1,'Controller::run()'],['../classNode.html#a89bb61a94d73680b692280d83e83d2f4',1,'Node::run()']]]
+];
