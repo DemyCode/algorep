@@ -1,0 +1,22 @@
+<map id="src/main.cc" name="src/main.cc">
+<area shape="rect" id="node6" href="$client_8hh.html" title="mpi_classes/client.hh" alt="" coords="845,80,993,107"/>
+<area shape="rect" id="node42" href="$controller_8hh.html" title="mpi_classes/controller.hh" alt="" coords="625,155,795,181"/>
+<area shape="rect" id="node43" href="$node_8hh.html" title="mpi_classes/node.hh" alt="" coords="1503,80,1648,107"/>
+<area shape="rect" id="node47" href="$process-information_8hh.html" title="mpi_classes/process\l&#45;information.hh" alt="" coords="1799,229,1944,271"/>
+<area shape="rect" id="node50" href="$string__utils_8hh.html" title="utils/string_utils.hh" alt="" coords="1877,543,2007,569"/>
+<area shape="rect" id="node9" href="$rpc-query_8hh.html" title="rpc/rpc&#45;query.hh" alt="" coords="805,237,921,263"/>
+<area shape="rect" id="node39" href="$clock_8hh.html" title="utils/clock.hh" alt="" coords="870,155,969,181"/>
+<area shape="rect" id="node11" href="$append-entries_8hh.html" title="append&#45;entries.hh" alt="" coords="1301,319,1426,345"/>
+<area shape="rect" id="node32" href="$rpc_8hh.html" title="rpc.hh" alt="" coords="1098,468,1157,495"/>
+<area shape="rect" id="node34" href="$get-state_8hh.html" title="get&#45;state.hh" alt="" coords="970,393,1061,420"/>
+<area shape="rect" id="node35" href="$message_8hh.html" title="message.hh" alt="" coords="637,319,730,345"/>
+<area shape="rect" id="node36" href="$new-entry_8hh.html" title="new&#45;entry.hh" alt="" coords="992,319,1089,345"/>
+<area shape="rect" id="node37" href="$request-vote_8hh.html" title="request&#45;vote.hh" alt="" coords="1437,393,1549,420"/>
+<area shape="rect" id="node38" href="$search-leader_8hh.html" title="search&#45;leader.hh" alt="" coords="740,393,859,420"/>
+<area shape="rect" id="node14" href="$json_8hpp.html" title="json/json.hpp" alt="" coords="1078,543,1177,569"/>
+<area shape="rect" id="node33" href="$entry_8hh.html" title="utils/entry.hh" alt="" coords="1315,393,1412,420"/>
+<area shape="rect" id="node45" href="$lib-rpc_8hh.html" title="rpc/lib&#45;rpc.hh" alt="" coords="1127,155,1224,181"/>
+<area shape="rect" id="node46" href="$debugger_8hh.html" title="utils/debugger.hh" alt="" coords="1553,155,1675,181"/>
+<area shape="rect" id="node48" href="$singleton_8hh.html" title="utils/singleton.hh" alt="" coords="1783,319,1903,345"/>
+<area shape="rect" id="node49" href="$singleton_8hxx.html" title="utils/singleton.hxx" alt="" coords="1776,393,1903,420"/>
+</map>

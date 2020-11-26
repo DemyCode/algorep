@@ -1,0 +1,11 @@
+<map id="src/mpi_classes/process&#45;information.hh" name="src/mpi_classes/process&#45;information.hh">
+<area shape="rect" id="node2" href="$debugger_8hh.html" title="lib/utils/debugger.hh" alt="" coords="200,102,338,129"/>
+<area shape="rect" id="node5" href="$main_8cc.html" title="src/main.cc" alt="" coords="65,259,156,285"/>
+<area shape="rect" id="node6" href="$node_8cc.html" title="src/mpi_classes/node.cc" alt="" coords="246,259,412,285"/>
+<area shape="rect" id="node7" href="$client_8cc.html" title="src/mpi_classes/client.cc" alt="" coords="428,102,598,129"/>
+<area shape="rect" id="node8" href="$controller_8cc.html" title="src/mpi_classes/controller.cc" alt="" coords="622,102,814,129"/>
+<area shape="rect" id="node9" href="$process-information_8cc.html" title="src/mpi_classes/process\l&#45;information.cc" alt="" coords="839,95,1006,136"/>
+<area shape="rect" id="node10" href="$lib-rpc_8cc.html" title="src/rpc/lib&#45;rpc.cc" alt="" coords="1030,102,1148,129"/>
+<area shape="rect" id="node3" href="$debugger_8cc.html" title="lib/utils/debugger.cc" alt="" coords="22,184,161,211"/>
+<area shape="rect" id="node4" href="$node_8hh.html" title="src/mpi_classes/node.hh" alt="" coords="186,184,352,211"/>
+</map>

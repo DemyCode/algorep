@@ -1,0 +1,12 @@
+<map id="src/mpi_classes/controller.hh" name="src/mpi_classes/controller.hh">
+<area shape="rect" id="node3" href="$message_8hh.html" title="rpc/message.hh" alt="" coords="1999,155,2113,181"/>
+<area shape="rect" id="node37" href="$rpc-query_8hh.html" title="rpc/rpc&#45;query.hh" alt="" coords="2266,80,2382,107"/>
+<area shape="rect" id="node4" href="$rpc_8hh.html" title="rpc.hh" alt="" coords="2228,304,2287,331"/>
+<area shape="rect" id="node5" href="$json_8hpp.html" title="json/json.hpp" alt="" coords="1589,379,1688,405"/>
+<area shape="rect" id="node39" href="$append-entries_8hh.html" title="append&#45;entries.hh" alt="" coords="1849,155,1975,181"/>
+<area shape="rect" id="node41" href="$get-state_8hh.html" title="get&#45;state.hh" alt="" coords="2440,229,2531,256"/>
+<area shape="rect" id="node42" href="$new-entry_8hh.html" title="new&#45;entry.hh" alt="" coords="2138,155,2235,181"/>
+<area shape="rect" id="node43" href="$request-vote_8hh.html" title="request&#45;vote.hh" alt="" coords="2555,229,2667,256"/>
+<area shape="rect" id="node44" href="$search-leader_8hh.html" title="search&#45;leader.hh" alt="" coords="2246,229,2365,256"/>
+<area shape="rect" id="node40" href="$entry_8hh.html" title="utils/entry.hh" alt="" coords="1971,229,2069,256"/>
+</map>

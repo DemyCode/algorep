@@ -1,0 +1,14 @@
+<map id="src/rpc/search&#45;leader.hh" name="src/rpc/search&#45;leader.hh">
+<area shape="rect" id="node2" href="$rpc-query_8hh.html" title="src/rpc/rpc&#45;query.hh" alt="" coords="277,80,416,107"/>
+<area shape="rect" id="node13" href="$search-leader_8cc.html" title="src/rpc/search&#45;leader.cc" alt="" coords="440,80,603,107"/>
+<area shape="rect" id="node3" href="$client_8hh.html" title="src/mpi_classes/client.hh" alt="" coords="5,155,176,181"/>
+<area shape="rect" id="node5" href="$client_8cc.html" title="src/mpi_classes/client.cc" alt="" coords="128,229,299,256"/>
+<area shape="rect" id="node6" href="$controller_8hh.html" title="src/mpi_classes/controller.hh" alt="" coords="251,155,443,181"/>
+<area shape="rect" id="node8" href="$lib-rpc_8hh.html" title="src/rpc/lib&#45;rpc.hh" alt="" coords="467,155,586,181"/>
+<area shape="rect" id="node12" href="$rpc-query_8cc.html" title="src/rpc/rpc&#45;query.cc" alt="" coords="611,155,749,181"/>
+<area shape="rect" id="node4" href="$main_8cc.html" title="src/main.cc" alt="" coords="291,304,381,331"/>
+<area shape="rect" id="node7" href="$controller_8cc.html" title="src/mpi_classes/controller.cc" alt="" coords="373,229,565,256"/>
+<area shape="rect" id="node9" href="$node_8hh.html" title="src/mpi_classes/node.hh" alt="" coords="590,229,757,256"/>
+<area shape="rect" id="node11" href="$lib-rpc_8cc.html" title="src/rpc/lib&#45;rpc.cc" alt="" coords="781,229,899,256"/>
+<area shape="rect" id="node10" href="$node_8cc.html" title="src/mpi_classes/node.cc" alt="" coords="590,304,757,331"/>
+</map>

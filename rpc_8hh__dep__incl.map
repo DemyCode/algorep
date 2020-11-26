@@ -1,0 +1,28 @@
+<map id="src/rpc/rpc.hh" name="src/rpc/rpc.hh">
+<area shape="rect" id="node2" href="$entry_8hh.html" title="lib/utils/entry.hh" alt="" coords="189,80,304,107"/>
+<area shape="rect" id="node7" href="$append-entries_8hh.html" title="src/rpc/append&#45;entries.hh" alt="" coords="162,155,331,181"/>
+<area shape="rect" id="node9" href="$rpc-query_8hh.html" title="src/rpc/rpc&#45;query.hh" alt="" coords="828,229,966,256"/>
+<area shape="rect" id="node14" href="$lib-rpc_8hh.html" title="src/rpc/lib&#45;rpc.hh" alt="" coords="1036,304,1155,331"/>
+<area shape="rect" id="node17" href="$new-entry_8hh.html" title="src/rpc/new&#45;entry.hh" alt="" coords="356,155,497,181"/>
+<area shape="rect" id="node19" href="$get-state_8hh.html" title="src/rpc/get&#45;state.hh" alt="" coords="1042,155,1176,181"/>
+<area shape="rect" id="node21" href="$message_8hh.html" title="src/rpc/message.hh" alt="" coords="1252,155,1390,181"/>
+<area shape="rect" id="node23" href="$request-vote_8hh.html" title="src/rpc/request&#45;vote.hh" alt="" coords="522,155,678,181"/>
+<area shape="rect" id="node25" href="$search-leader_8hh.html" title="src/rpc/search&#45;leader.hh" alt="" coords="753,80,916,107"/>
+<area shape="rect" id="node27" href="$rpc_8cc.html" title="src/rpc/rpc.cc" alt="" coords="1143,80,1246,107"/>
+<area shape="rect" id="node3" href="$entry_8cc.html" title="lib/utils/entry.cc" alt="" coords="22,155,137,181"/>
+<area shape="rect" id="node4" href="$node_8hh.html" title="src/mpi_classes/node.hh" alt="" coords="484,379,651,405"/>
+<area shape="rect" id="node5" href="$main_8cc.html" title="src/main.cc" alt="" coords="830,453,921,480"/>
+<area shape="rect" id="node6" href="$node_8cc.html" title="src/mpi_classes/node.cc" alt="" coords="484,453,651,480"/>
+<area shape="rect" id="node8" href="$append-entries_8cc.html" title="src/rpc/append&#45;entries.cc" alt="" coords="127,229,296,256"/>
+<area shape="rect" id="node10" href="$client_8hh.html" title="src/mpi_classes/client.hh" alt="" coords="790,304,961,331"/>
+<area shape="rect" id="node11" href="$client_8cc.html" title="src/mpi_classes/client.cc" alt="" coords="913,379,1084,405"/>
+<area shape="rect" id="node12" href="$controller_8hh.html" title="src/mpi_classes/controller.hh" alt="" coords="1433,304,1625,331"/>
+<area shape="rect" id="node16" href="$rpc-query_8cc.html" title="src/rpc/rpc&#45;query.cc" alt="" coords="628,304,766,331"/>
+<area shape="rect" id="node13" href="$controller_8cc.html" title="src/mpi_classes/controller.cc" alt="" coords="1282,379,1474,405"/>
+<area shape="rect" id="node15" href="$lib-rpc_8cc.html" title="src/rpc/lib&#45;rpc.cc" alt="" coords="1115,379,1234,405"/>
+<area shape="rect" id="node18" href="$new-entry_8cc.html" title="src/rpc/new&#45;entry.cc" alt="" coords="372,229,513,256"/>
+<area shape="rect" id="node20" href="$get-state_8cc.html" title="src/rpc/get&#45;state.cc" alt="" coords="1042,229,1176,256"/>
+<area shape="rect" id="node22" href="$message_8cc.html" title="src/rpc/message.cc" alt="" coords="1303,229,1440,256"/>
+<area shape="rect" id="node24" href="$request-vote_8cc.html" title="src/rpc/request&#45;vote.cc" alt="" coords="606,229,762,256"/>
+<area shape="rect" id="node26" href="$search-leader_8cc.html" title="src/rpc/search&#45;leader.cc" alt="" coords="702,155,865,181"/>
+</map>

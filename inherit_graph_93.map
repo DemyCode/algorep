@@ -1,0 +1,15 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$classRPC.html" title="RPC" alt="" coords="5,284,56,311"/>
+<area shape="rect" id="node2" href="$classAppendEntries.html" title="AppendEntries" alt="" coords="134,5,241,32"/>
+<area shape="rect" id="node3" href="$classAppendEntriesResponse.html" title="AppendEntriesResponse" alt="" coords="104,56,271,83"/>
+<area shape="rect" id="node4" href="$classGetState.html" title="GetState" alt="" coords="150,107,225,133"/>
+<area shape="rect" id="node5" href="$classGetStateResponse.html" title="GetStateResponse" alt="" coords="121,157,254,184"/>
+<area shape="rect" id="node6" href="$classMessage.html" title="Message" alt="" coords="150,208,225,235"/>
+<area shape="rect" id="node7" href="$classMessageResponse.html" title="MessageResponse" alt="" coords="120,259,255,285"/>
+<area shape="rect" id="node8" href="$classNewEntry.html" title="NewEntry" alt="" coords="147,309,227,336"/>
+<area shape="rect" id="node9" href="$classNewEntryResponse.html" title="NewEntryResponse" alt="" coords="118,360,257,387"/>
+<area shape="rect" id="node10" href="$classRequestVote.html" title="RequestVote" alt="" coords="138,411,237,437"/>
+<area shape="rect" id="node11" href="$classRequestVoteResponse.html" title="RequestVoteResponse" alt="" coords="109,461,266,488"/>
+<area shape="rect" id="node12" href="$classSearchLeader.html" title="SearchLeader" alt="" coords="136,512,239,539"/>
+<area shape="rect" id="node13" href="$classSearchLeaderResponse.html" title="SearchLeaderResponse" alt="" coords="107,563,268,589"/>
+</map>
